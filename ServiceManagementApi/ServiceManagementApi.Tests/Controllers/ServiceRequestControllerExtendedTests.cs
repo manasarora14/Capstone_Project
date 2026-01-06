@@ -11,6 +11,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 using static ServiceManagementApi.DTOs.TechnicianWorkloadDto;
+using System.Dynamic;
+using System.Reflection;
 
 namespace ServiceManagementApi.Tests.Controllers;
 
@@ -121,15 +123,19 @@ public class ServiceRequestControllerExtendedTests
             new ServiceRequest { Id = 2, IssueDescription = "Request 2", CustomerId = "customer1" }
         };
 
-        _mockService.Setup(s => s.GetCustomerRequestsAsync("customer1"))
-            .ReturnsAsync(requests);
+        var pagedResponse = new PagedResponse<ServiceRequest> { Items = requests, TotalCount = requests.Count };
+        _mockService.Setup(s => s.GetCustomerRequestsAsync("customer1", It.IsAny<QueryParameters>()))
+            .ReturnsAsync(pagedResponse);
 
         // Act
-        var result = await _controller.GetMyRequests(null);
+        var result = await _controller.GetMyRequests(new QueryParameters());
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var resultRequests = Assert.IsAssignableFrom<IEnumerable<ServiceRequest>>(okResult.Value);
+        var responseType = okResult.Value!.GetType();
+        var itemsProperty = responseType.GetProperty("items");
+        var itemsValue = itemsProperty!.GetValue(okResult.Value);
+        var resultRequests = (IEnumerable<ServiceRequestResponseDto>)itemsValue!;
         Assert.Equal(2, resultRequests.Count());
     }
 
@@ -190,15 +196,19 @@ public class ServiceRequestControllerExtendedTests
             new ServiceRequest { Id = 2, IssueDescription = "Request B", CustomerId = "manager1", Status = RequestStatus.Assigned }
         };
 
-        _mockService.Setup(s => s.GetAllForMonitorAsync())
-            .ReturnsAsync(requests);
+        var pagedResponse = new PagedResponse<ServiceRequest> { Items = requests, TotalCount = requests.Count };
+        _mockService.Setup(s => s.GetAllForMonitorAsync(It.IsAny<QueryParameters>()))
+            .ReturnsAsync(pagedResponse);
 
         // Act
-        var result = await _controller.Monitor(null);
+        var result = await _controller.Monitor(new QueryParameters());
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var resultRequests = Assert.IsAssignableFrom<IEnumerable<ServiceRequest>>(okResult.Value);
+        var responseType = okResult.Value!.GetType();
+        var itemsProperty = responseType.GetProperty("items");
+        var itemsValue = itemsProperty!.GetValue(okResult.Value);
+        var resultRequests = (IEnumerable<ServiceRequestResponseDto>)itemsValue!;
         Assert.Equal(2, resultRequests.Count());
     }
 
@@ -336,15 +346,19 @@ public class ServiceRequestControllerExtendedTests
             new ServiceRequest { Id = 2, IssueDescription = "Task 2", CustomerId = "cust1", TechnicianId = "tech1", Status = RequestStatus.InProgress }
         };
 
-        _mockService.Setup(s => s.GetTechnicianTasksAsync("tech1"))
-            .ReturnsAsync(tasks);
+        var pagedResponse = new PagedResponse<ServiceRequest> { Items = tasks, TotalCount = tasks.Count };
+        _mockService.Setup(s => s.GetTechnicianTasksAsync("tech1", It.IsAny<QueryParameters>()))
+            .ReturnsAsync(pagedResponse);
 
         // Act
-        var result = await _controller.GetMyTasks(null);
+        var result = await _controller.GetMyTasks(new QueryParameters());
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var resultTasks = Assert.IsAssignableFrom<IEnumerable<ServiceRequest>>(okResult.Value);
+        var responseType = okResult.Value!.GetType();
+        var itemsProperty = responseType.GetProperty("items");
+        var itemsValue = itemsProperty!.GetValue(okResult.Value);
+        var resultTasks = (IEnumerable<ServiceRequestResponseDto>)itemsValue!;
         Assert.Equal(2, resultTasks.Count());
         Assert.All(resultTasks, task => Assert.Equal("tech1", task.TechnicianId));
     }
@@ -372,7 +386,7 @@ public class ServiceRequestControllerExtendedTests
         var result = await _controller.StartWork(1);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.IsType<OkResult>(result);
         _mockService.Verify(s => s.StartWorkAsync(1, "tech1", It.IsAny<System.DateTime>()), Times.Once);
     }
 
@@ -470,7 +484,7 @@ public class ServiceRequestControllerExtendedTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var resultRequest = Assert.IsType<ServiceRequest>(okResult.Value);
+        var resultRequest = Assert.IsType<ServiceRequestResponseDto>(okResult.Value);
         Assert.Equal(1, resultRequest.Id);
         Assert.Equal(RequestStatus.Assigned, resultRequest.Status);
     }

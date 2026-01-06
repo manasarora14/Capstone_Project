@@ -156,7 +156,7 @@ public class CategoryControllerExtendedTests
         var result = await _controller.Update(updateDto);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.IsType<OkResult>(result);
         _mockCategoryService.Verify(s => s.UpdateAsync(updateDto), Times.Once);
     }
 
@@ -173,7 +173,7 @@ public class CategoryControllerExtendedTests
         var result = await _controller.Delete(categoryId);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.IsType<OkResult>(result);
         _mockCategoryService.Verify(s => s.DeleteAsync(categoryId), Times.Once);
     }
 }
