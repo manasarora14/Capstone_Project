@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using ServiceManagementApi.Data;
 using ServiceManagementApi.DTOs;
@@ -7,7 +7,6 @@ using ServiceManagementApi.Services;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore.InMemory;
 using System.Linq;
 using Xunit;
 
@@ -17,9 +16,10 @@ public class ServiceRequestServiceTests
 {
     private ApplicationDbContext CreateContext(string dbName)
     {
-        var opts = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(dbName)
-            .Options;
+        var optsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        // Call the non-generic extension by casting so the UseInMemoryDatabase extension is found
+        ((DbContextOptionsBuilder)optsBuilder).UseInMemoryDatabase(dbName);
+        var opts = optsBuilder.Options;
         return new ApplicationDbContext(opts);
     }
 

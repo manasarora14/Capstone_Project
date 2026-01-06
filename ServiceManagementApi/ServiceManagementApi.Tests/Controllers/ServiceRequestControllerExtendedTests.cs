@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -9,7 +5,12 @@ using ServiceManagementApi.Controllers;
 using ServiceManagementApi.DTOs;
 using ServiceManagementApi.Models;
 using ServiceManagementApi.Services;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Xunit;
+using static ServiceManagementApi.DTOs.TechnicianWorkloadDto;
 
 namespace ServiceManagementApi.Tests.Controllers;
 
@@ -391,15 +392,16 @@ public class ServiceRequestControllerExtendedTests
             HttpContext = new DefaultHttpContext { User = techUser }
         };
 
-        _mockService.Setup(s => s.FinishWorkAsync(1, "tech1", It.IsAny<System.DateTime>()))
-            .ReturnsAsync(true);
-
+        _mockService.Setup(s => s.FinishWorkAsync(1, "tech1", It.IsAny<System.DateTime>(), It.IsAny<string?>()))
+             .ReturnsAsync(true);
         // Act
-        var result = await _controller.FinishWork(1);
+        var finishWorkDto=new TechnicianWorkloadDto.FinishWorkDto();
+        var result = await _controller.FinishWork(1, finishWorkDto);
+
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        _mockService.Verify(s => s.FinishWorkAsync(1, "tech1", It.IsAny<System.DateTime>()), Times.Once);
+        _mockService.Verify(s => s.FinishWorkAsync(1, "tech1", It.IsAny<System.DateTime>(), It.IsAny<string?>()), Times.Once);
     }
 
     // TC-25: FR-TECH-04 - Accept Assignment with Planned Start

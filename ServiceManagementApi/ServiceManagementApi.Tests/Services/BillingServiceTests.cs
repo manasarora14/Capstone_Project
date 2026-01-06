@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using ServiceManagementApi.Data;
 using ServiceManagementApi.Models;
 using ServiceManagementApi.Services;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceManagementApi.Tests.Services;
@@ -20,7 +22,13 @@ public class BillingServiceTests
     public async Task PayInvoiceAsync_MarksPaidAndClosesRequest()
     {
         var ctx = CreateContext(nameof(PayInvoiceAsync_MarksPaidAndClosesRequest));
-        var req = new ServiceRequest { Id = 1, Status = RequestStatus.Completed };
+        var req = new ServiceRequest
+        {
+            Id = 1,
+            Status = RequestStatus.Completed,
+            IssueDescription = "Test issue", // Added required property
+            CustomerId = "cust1"             // Added required property
+        };
         var invoice = new Invoice { Id = 1, ServiceRequestId = 1, Amount = 100, Status = "Pending" };
         ctx.ServiceRequests.Add(req);
         ctx.Invoices.Add(invoice);
@@ -41,9 +49,9 @@ public class BillingServiceTests
     public async Task GetInvoicesAsync_FiltersByCustomer()
     {
         var ctx = CreateContext(nameof(GetInvoicesAsync_FiltersByCustomer));
-        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust1" });
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust1", IssueDescription = "Test issue" });
         ctx.Invoices.Add(new Invoice { Id = 1, ServiceRequestId = 1, Amount = 50, Status = "Pending" });
-        ctx.ServiceRequests.Add(new ServiceRequest { Id = 2, CustomerId = "cust2" });
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 2, CustomerId = "cust2", IssueDescription = "Test issue 2" });
         ctx.Invoices.Add(new Invoice { Id = 2, ServiceRequestId = 2, Amount = 70, Status = "Pending" });
         await ctx.SaveChangesAsync();
 
@@ -59,7 +67,14 @@ public class BillingServiceTests
     public async Task CreateInvoiceAsync_AddsInvoiceIfMissing()
     {
         var ctx = CreateContext(nameof(CreateInvoiceAsync_AddsInvoiceIfMissing));
-        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, Category = new ServiceCategory { BaseCharge = 100, SlaHours = 4 }, Priority = Priority.Medium });
+        _ = ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            Category = new ServiceCategory { BaseCharge = 100, SlaHours = 4 },
+            Priority = Priority.Medium,
+            IssueDescription = "Test issue", // Added required property
+            CustomerId = "cust1"             // Added required property
+        });
         await ctx.SaveChangesAsync();
         var svc = new BillingService(ctx);
 

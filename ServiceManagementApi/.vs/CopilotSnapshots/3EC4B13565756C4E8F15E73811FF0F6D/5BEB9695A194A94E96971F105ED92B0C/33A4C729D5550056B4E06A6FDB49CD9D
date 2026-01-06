@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using ServiceManagementApi.Data;
 using ServiceManagementApi.DTOs;
@@ -7,7 +7,6 @@ using ServiceManagementApi.Services;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore.InMemory;
 using System.Linq;
 using Xunit;
 

@@ -3,16 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|solutionrelative:servicemanagementapi\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi\\services\\adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|solutionrelative:servicemanagementapi\\services\\adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi\\servicemanagementapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|solutionrelative:servicemanagementapi\\servicemanagementapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi\\services\\adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|solutionrelative:servicemanagementapi\\services\\adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi\\controllers\\servicerequestcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -41,10 +45,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi\\data\\dbseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|solutionrelative:servicemanagementapi\\data\\dbseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi.tests\\controllers\\servicerequestcontrollerextendedtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|solutionrelative:servicemanagementapi.tests\\controllers\\servicerequestcontrollerextendedtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -150,10 +150,6 @@
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\KIIT\\Desktop\\Shaadi\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20260102114655_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi.tests\\controllers\\billingcontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|solutionrelative:servicemanagementapi.tests\\controllers\\billingcontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\KIIT\\AppData\\Local\\Temp\\vm2fn03d..sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|"
     },
     {
@@ -179,26 +175,10 @@
       "RelativeMoniker": "D:0:0:{89A071DE-25C3-4818-8CF7-A27E8D3734A8}|ServiceManagementApi\\ServiceManagementApi.csproj|solutionrelative:servicemanagementapi\\servicemanagementapi.csproj.backup.tmp||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi.tests\\controllers\\servicerequestcontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|solutionrelative:servicemanagementapi.tests\\controllers\\servicerequestcontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\KIIT\\Desktop\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\KIIT\\Pictures\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi.tests\\controllers\\billingcontrollerextendedtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|solutionrelative:servicemanagementapi.tests\\controllers\\billingcontrollerextendedtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi.tests\\controllers\\dashboardcontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|solutionrelative:servicemanagementapi.tests\\controllers\\dashboardcontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|c:\\users\\kiit\\desktop\\project\\servicemanagementapi\\servicemanagementapi.tests\\controllers\\admincontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{49FAA2B4-6B46-CCB6-E9A7-9C2B1151F2F8}|ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj|solutionrelative:servicemanagementapi.tests\\controllers\\admincontrollertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -208,35 +188,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ServiceManagementApi.Tests.csproj",
+              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj",
+              "RelativeDocumentMoniker": "ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj",
+              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj*",
+              "RelativeToolTip": "ServiceManagementApi.Tests\\ServiceManagementApi.Tests.csproj*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-01-06T13:45:44.128Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "ServiceRequest.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Models\\ServiceRequest.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi\\Models\\ServiceRequest.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Models\\ServiceRequest.cs",
-              "RelativeToolTip": "ServiceManagementApi\\Models\\ServiceRequest.cs",
-              "ViewState": "AgIAAB0AAAAAAAAAAAAxwCYAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T11:19:54.713Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ServiceRequestController.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
-              "RelativeToolTip": "ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
-              "ViewState": "AgIAAKkAAAAAAAAAAAAmwLMAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T13:25:37.764Z"
             },
             {
               "$type": "Document",
@@ -248,60 +217,90 @@
               "RelativeToolTip": "ServiceManagementApi\\ServiceManagementApi.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-12-27T11:18:50.174Z"
+              "WhenOpened": "2025-12-27T11:18:50.174Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 6,
+              "Title": "ServiceRequest.cs",
+              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Models\\ServiceRequest.cs",
+              "RelativeDocumentMoniker": "ServiceManagementApi\\Models\\ServiceRequest.cs",
+              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Models\\ServiceRequest.cs",
+              "RelativeToolTip": "ServiceManagementApi\\Models\\ServiceRequest.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAxwCYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-27T11:19:54.713Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ServiceRequestController.cs",
+              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
+              "RelativeDocumentMoniker": "ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
+              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
+              "RelativeToolTip": "ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
+              "ViewState": "AgIAAKkAAAAAAAAAAAAmwLMAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-27T13:25:37.764Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "AdminController.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\AdminController.cs",
               "RelativeDocumentMoniker": "ServiceManagementApi\\Controllers\\AdminController.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\AdminController.cs",
               "RelativeToolTip": "ServiceManagementApi\\Controllers\\AdminController.cs",
-              "ViewState": "AgIAACMAAAAAAAAAAAAgwDAAAABBAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADAAAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-27T14:43:31.402Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "AdminService.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Services\\AdminService.cs",
               "RelativeDocumentMoniker": "ServiceManagementApi\\Services\\AdminService.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Services\\AdminService.cs",
               "RelativeToolTip": "ServiceManagementApi\\Services\\AdminService.cs",
-              "ViewState": "AgIAADAAAAAAAAAAAAA6wF8AAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAADEAAAAAAAAAAAAiwF8AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-29T09:16:24.229Z"
+              "WhenOpened": "2025-12-29T09:16:24.229Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "ServiceRequestDtos.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\DTOs\\ServiceRequestDtos.cs",
               "RelativeDocumentMoniker": "ServiceManagementApi\\DTOs\\ServiceRequestDtos.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\DTOs\\ServiceRequestDtos.cs",
               "RelativeToolTip": "ServiceManagementApi\\DTOs\\ServiceRequestDtos.cs",
-              "ViewState": "AgIAAFYAAAAAAAAAAAA0wGEAAAA0AAAAAAAAAA==",
+              "ViewState": "AgIAAFcAAAAAAAAAAAAywGEAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T17:07:54.386Z"
+              "WhenOpened": "2026-01-02T17:07:54.386Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "TechnicianDtos.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\DTOs\\TechnicianDtos.cs",
               "RelativeDocumentMoniker": "ServiceManagementApi\\DTOs\\TechnicianDtos.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\DTOs\\TechnicianDtos.cs",
               "RelativeToolTip": "ServiceManagementApi\\DTOs\\TechnicianDtos.cs",
-              "ViewState": "AgIAACsAAAAAAAAAAAAAwDMAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAACsAAAAAAAAAAAAxwDMAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-31T13:50:59.3Z"
+              "WhenOpened": "2025-12-31T13:50:59.3Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "ServiceRequestService.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Services\\ServiceRequestService.cs",
               "RelativeDocumentMoniker": "ServiceManagementApi\\Services\\ServiceRequestService.cs",
@@ -309,11 +308,12 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\ServiceRequestService.cs",
               "ViewState": "AgIAANQAAAAAAAAAAIAwwPoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-29T09:18:28.53Z"
+              "WhenOpened": "2025-12-29T09:18:28.53Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "DbSeeder.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Data\\DbSeeder.cs",
               "RelativeDocumentMoniker": "ServiceManagementApi\\Data\\DbSeeder.cs",
@@ -321,11 +321,12 @@
               "RelativeToolTip": "ServiceManagementApi\\Data\\DbSeeder.cs",
               "ViewState": "AgIAABAAAAAAAAAAAAAQwBkAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T11:20:54.535Z"
+              "WhenOpened": "2025-12-27T11:20:54.535Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "CategoryController.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\CategoryController.cs",
               "RelativeDocumentMoniker": "ServiceManagementApi\\Controllers\\CategoryController.cs",
@@ -333,19 +334,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Controllers\\CategoryController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-30T14:22:28.75Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "ServiceRequestControllerExtendedTests.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerExtendedTests.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerExtendedTests.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerExtendedTests.cs",
-              "RelativeToolTip": "ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerExtendedTests.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T09:19:05.65Z"
+              "WhenOpened": "2025-12-30T14:22:28.75Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -357,7 +347,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Controllers\\AuthController.cs",
               "ViewState": "AgIAAA0AAAAAAAAAAAAQwBkAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T13:25:10.242Z"
+              "WhenOpened": "2025-12-27T13:25:10.242Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -367,9 +358,10 @@
               "RelativeDocumentMoniker": "ServiceManagementApi\\Services\\AuthService.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Services\\AuthService.cs",
               "RelativeToolTip": "ServiceManagementApi\\Services\\AuthService.cs",
-              "ViewState": "AgIAAEMAAAAAAAAAAAAAAFYAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAEAAAAAAAAAAAIBJwFYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-29T09:15:29.869Z"
+              "WhenOpened": "2025-12-29T09:15:29.869Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -381,7 +373,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\BillingService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-29T09:10:50.865Z"
+              "WhenOpened": "2025-12-29T09:10:50.865Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -393,7 +386,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\AvailabilityService.cs",
               "ViewState": "AgIAAA8AAAAAAAAAAAAYwDkAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-01T12:21:49.788Z"
+              "WhenOpened": "2026-01-01T12:21:49.788Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -405,7 +399,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Models\\ApplicationUser.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAABJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-05T09:13:12.474Z"
+              "WhenOpened": "2026-01-05T09:13:12.474Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -417,7 +412,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Models\\ServiceCategory.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T11:19:13.753Z"
+              "WhenOpened": "2025-12-27T11:19:13.753Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -429,7 +425,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Models\\NotificationModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-03T13:19:15.819Z"
+              "WhenOpened": "2026-01-03T13:19:15.819Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -441,7 +438,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Models\\Invoice.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-28T16:48:07.647Z"
+              "WhenOpened": "2025-12-28T16:48:07.647Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -453,7 +451,8 @@
               "RelativeToolTip": "ServiceManagementApi\\DTOs\\PageResponseDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-03T09:29:44.126Z"
+              "WhenOpened": "2026-01-03T09:29:44.126Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -465,7 +464,8 @@
               "RelativeToolTip": "ServiceManagementApi\\DTOs\\CategoryDtos.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-31T13:50:58.547Z"
+              "WhenOpened": "2025-12-31T13:50:58.547Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -477,7 +477,8 @@
               "RelativeToolTip": "ServiceManagementApi\\DTOs\\AuthDtos.cs",
               "ViewState": "AgIAABQAAAAAAAAAAAAIwB8AAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-31T13:50:57.684Z"
+              "WhenOpened": "2025-12-31T13:50:57.684Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -489,7 +490,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Data\\ApplicationDbContext.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAABFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T11:20:33.83Z"
+              "WhenOpened": "2025-12-27T11:20:33.83Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -499,9 +501,10 @@
               "RelativeDocumentMoniker": "ServiceManagementApi\\Controllers\\TechnicianController.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\TechnicianController.cs",
               "RelativeToolTip": "ServiceManagementApi\\Controllers\\TechnicianController.cs",
-              "ViewState": "AgIAAEQAAAAAAAAAAAAAABEAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAEEAAAAAAAAAAIBJwBEAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-30T14:20:10.584Z"
+              "WhenOpened": "2025-12-30T14:20:10.584Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -513,7 +516,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Controllers\\DashboardController.cs",
               "ViewState": "AgIAABEAAAAAAAAAAAAAwBUAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T13:27:29.066Z"
+              "WhenOpened": "2025-12-27T13:27:29.066Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -525,7 +529,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Controllers\\BillingController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-28T16:53:52.728Z"
+              "WhenOpened": "2025-12-28T16:53:52.728Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -537,7 +542,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Controllers\\BillingAdminController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-30T14:56:56.908Z"
+              "WhenOpened": "2025-12-30T14:56:56.908Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -547,9 +553,10 @@
               "RelativeDocumentMoniker": "ServiceManagementApi\\Program.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\Program.cs",
               "RelativeToolTip": "ServiceManagementApi\\Program.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAAAABYAAAAgAAAAAAAAAA==",
+              "ViewState": "AgIAAAQAAAAAAAAAAIBJwBYAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T11:22:25.781Z"
+              "WhenOpened": "2025-12-27T11:22:25.781Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -561,7 +568,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\TechnicianService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-30T18:44:24.464Z"
+              "WhenOpened": "2025-12-30T18:44:24.464Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -573,7 +581,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\INotificationQueue.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-03T06:45:52.117Z"
+              "WhenOpened": "2026-01-03T06:45:52.117Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -585,7 +594,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\EmailBackgroundService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-03T06:46:26.969Z"
+              "WhenOpened": "2026-01-03T06:46:26.969Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -597,7 +607,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\DashboardService.cs",
               "ViewState": "AgIAAEIAAAAAAAAAAAAowFQAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-29T09:18:50.352Z"
+              "WhenOpened": "2025-12-29T09:18:50.352Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -609,7 +620,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Services\\CategoryService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAEgAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-30T14:22:22.671Z"
+              "WhenOpened": "2025-12-30T14:22:22.671Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -621,7 +633,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Middleware\\ExceptionMiddleware.cs",
               "ViewState": "AgIAABsAAAAAAAAAAAAYwB8AAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-27T11:22:11.534Z"
+              "WhenOpened": "2025-12-27T11:22:11.534Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -633,7 +646,8 @@
               "RelativeToolTip": "ServiceManagementApi\\Hubs\\NotificationHub.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-03T13:25:13.077Z"
+              "WhenOpened": "2026-01-03T13:25:13.077Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -645,7 +659,8 @@
               "RelativeToolTip": "ServiceManagementApi\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-12-27T11:21:30.47Z"
+              "WhenOpened": "2025-12-27T11:21:30.47Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -655,97 +670,34 @@
               "RelativeDocumentMoniker": "..\\..\\Shaadi\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20260102114655_InitialCreate.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Shaadi\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20260102114655_InitialCreate.cs",
               "RelativeToolTip": "..\\..\\Shaadi\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20260102114655_InitialCreate.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-02T11:46:55.852Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
-              "Title": "AdminControllerTests.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\AdminControllerTests.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi.Tests\\Controllers\\AdminControllerTests.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\AdminControllerTests.cs",
-              "RelativeToolTip": "ServiceManagementApi.Tests\\Controllers\\AdminControllerTests.cs",
-              "ViewState": "AgIAAGwAAAAAAAAAAEBVwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T05:34:28.762Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 37,
-              "Title": "BillingControllerTests.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\BillingControllerTests.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi.Tests\\Controllers\\BillingControllerTests.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\BillingControllerTests.cs",
-              "RelativeToolTip": "ServiceManagementApi.Tests\\Controllers\\BillingControllerTests.cs",
-              "ViewState": "AgIAACcAAAAAAAAAAAAmwDcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-31T13:36:39.086Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 50,
-              "Title": "DashboardControllerTests.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\DashboardControllerTests.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi.Tests\\Controllers\\DashboardControllerTests.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\DashboardControllerTests.cs",
-              "RelativeToolTip": "ServiceManagementApi.Tests\\Controllers\\DashboardControllerTests.cs",
-              "ViewState": "AgIAAJ8AAAAAAAAAAEBVwKMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T05:28:15.773Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 49,
-              "Title": "BillingControllerExtendedTests.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\BillingControllerExtendedTests.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi.Tests\\Controllers\\BillingControllerExtendedTests.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\BillingControllerExtendedTests.cs",
-              "RelativeToolTip": "ServiceManagementApi.Tests\\Controllers\\BillingControllerExtendedTests.cs",
-              "ViewState": "AgIAALEAAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-02T05:26:41.142Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 48,
+              "DocumentIndex": 46,
               "Title": "ServiceRequestController.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Pictures\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\Pictures\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
               "ToolTip": "C:\\Users\\KIIT\\Pictures\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
               "RelativeToolTip": "..\\..\\..\\Pictures\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-01T11:23:49.183Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
+              "DocumentIndex": 45,
               "Title": "ServiceRequestController.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
               "RelativeDocumentMoniker": "..\\..\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
               "RelativeToolTip": "..\\..\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Controllers\\ServiceRequestController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-01T11:23:45.961Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 46,
-              "Title": "ServiceRequestControllerTests.cs",
-              "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerTests.cs",
-              "RelativeDocumentMoniker": "ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerTests.cs",
-              "ToolTip": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerTests.cs",
-              "RelativeToolTip": "ServiceManagementApi.Tests\\Controllers\\ServiceRequestControllerTests.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-31T13:36:55.221Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 37,
               "Title": "vm2fn03d..sql",
               "DocumentMoniker": "C:\\Users\\KIIT\\AppData\\Local\\Temp\\vm2fn03d..sql",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\Temp\\vm2fn03d..sql",
@@ -756,7 +708,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 38,
               "Title": "SQLQuery1.sql",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Shaadi\\ServiceManagementApi\\SQLQuery1.sql",
               "RelativeDocumentMoniker": "..\\..\\Shaadi\\ServiceManagementApi\\SQLQuery1.sql",
@@ -767,7 +719,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 39,
               "Title": "dbo.Invoices.sql",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/ServiceMgmtDB/True/SqlTable/dbo.Invoices.sql",
               "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/ServiceMgmtDB/True/SqlTable/dbo.Invoices.sql",
@@ -776,7 +728,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 40,
               "Title": "dbo.ServiceRequests.sql",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/ServiceMgmtDB/True/SqlTable/dbo.ServiceRequests.sql",
               "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/ServiceMgmtDB/True/SqlTable/dbo.ServiceRequests.sql",
@@ -785,19 +737,18 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 42,
               "Title": "20251228164850_AddInvoicingSystem.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164850_AddInvoicingSystem.cs",
               "RelativeDocumentMoniker": "..\\..\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164850_AddInvoicingSystem.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164850_AddInvoicingSystem.cs",
               "RelativeToolTip": "..\\..\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164850_AddInvoicingSystem.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-28T16:48:50.669Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 41,
               "Title": "dbo.ServiceCategories.sql",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/ServiceMgmtDB/True/SqlTable/dbo.ServiceCategories.sql",
               "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/ServiceMgmtDB/True/SqlTable/dbo.ServiceCategories.sql",
@@ -806,19 +757,18 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 43,
               "Title": "20251228164308_AddCategoryDetailsToDb.cs",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164308_AddCategoryDetailsToDb.cs",
               "RelativeDocumentMoniker": "..\\..\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164308_AddCategoryDetailsToDb.cs",
               "ToolTip": "C:\\Users\\KIIT\\Desktop\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164308_AddCategoryDetailsToDb.cs",
               "RelativeToolTip": "..\\..\\Service Management\\ServiceManagementApi\\ServiceManagementApi\\Migrations\\20251228164308_AddCategoryDetailsToDb.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-28T16:43:08.782Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 45,
+              "DocumentIndex": 44,
               "Title": "ServiceManagementApi.csproj.Backup.tmp",
               "DocumentMoniker": "C:\\Users\\KIIT\\Desktop\\Project\\ServiceManagementApi\\ServiceManagementApi\\ServiceManagementApi.csproj.Backup.tmp",
               "RelativeDocumentMoniker": "ServiceManagementApi\\ServiceManagementApi.csproj.Backup.tmp",
@@ -826,7 +776,8 @@
               "RelativeToolTip": "ServiceManagementApi\\ServiceManagementApi.csproj.Backup.tmp",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-12-27T13:39:46.249Z"
+              "WhenOpened": "2025-12-27T13:39:46.249Z",
+              "EditorCaption": ""
             }
           ]
         }

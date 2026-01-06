@@ -3,6 +3,8 @@ using ServiceManagementApi.Data;
 using ServiceManagementApi.DTOs;
 using ServiceManagementApi.Models;
 using ServiceManagementApi.Services;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceManagementApi.Tests.Services;

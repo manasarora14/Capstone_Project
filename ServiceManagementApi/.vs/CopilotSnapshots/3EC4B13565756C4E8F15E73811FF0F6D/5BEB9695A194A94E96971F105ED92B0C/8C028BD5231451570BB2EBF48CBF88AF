@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using ServiceManagementApi.Data;
 using ServiceManagementApi.DTOs;
@@ -7,8 +7,6 @@ using ServiceManagementApi.Services;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore.InMemory;
-using System.Linq;
 using Xunit;
 
 namespace ServiceManagementApi.Tests.Services;
@@ -24,13 +22,12 @@ public class ServiceRequestServiceTests
     }
 
     private BillingService CreateBilling(ApplicationDbContext ctx) => new BillingService(ctx);
-    private INotificationQueue CreateNotificationQueue() => new Mock<INotificationQueue>().Object;
 
     [Fact]
     public async Task CreateRequestAsync_AddsRequestWithRequestedStatus()
     {
         var ctx = CreateContext(nameof(CreateRequestAsync_AddsRequestWithRequestedStatus));
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var dto = new CreateRequestDto
         {
@@ -78,7 +75,7 @@ public class ServiceRequestServiceTests
         });
         await ctx.SaveChangesAsync();
 
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.AssignTechnicianAsync(new AssignTechnicianDto { RequestId = 2, TechnicianId = "tech1" });
 
@@ -91,7 +88,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(StartWorkAsync_SetsInProgress));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.Assigned, IssueDescription = "desc", CustomerId = "cust" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.StartWorkAsync(1, "t1", DateTime.UtcNow);
 
@@ -108,7 +105,7 @@ public class ServiceRequestServiceTests
         ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, BaseCharge = 100, SlaHours = 4, Name = "Cat" });
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.InProgress, CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1), IssueDescription = "desc", CustomerId = "cust" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.FinishWorkAsync(1, "t1", DateTime.UtcNow);
 
@@ -130,7 +127,7 @@ public class ServiceRequestServiceTests
         ctx.Invoices.Add(new Invoice { Id = 1, ServiceRequestId = 2, Amount = 50, Status = "Paid", PaidAt = DateTime.UtcNow });
         await ctx.SaveChangesAsync();
 
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var stats = await svc.GetDashboardStatsAsync() as dynamic;
 
@@ -155,7 +152,7 @@ public class ServiceRequestServiceTests
             CustomerId = "cust1"
         });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.AssignTechnicianAsync(new AssignTechnicianDto { RequestId = 1, TechnicianId = "tech1" });
 
@@ -191,7 +188,7 @@ public class ServiceRequestServiceTests
             CustomerId = "cust2"
         });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.AssignTechnicianAsync(new AssignTechnicianDto { RequestId = 2, TechnicianId = "otherTech" });
 
@@ -228,7 +225,7 @@ public class ServiceRequestServiceTests
             CustomerId = "c1"
         });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.RescheduleRequestAsync(2, DateTime.UtcNow, "cust", "Manager");
 
@@ -267,7 +264,7 @@ public class ServiceRequestServiceTests
             CustomerId = "c1"
         });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.RescheduleRequestAsync(2, DateTime.UtcNow.AddHours(8), "cust", "Manager");
 
@@ -281,7 +278,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(CancelRequestAsync_Fails_WhenInProgress));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust", Status = RequestStatus.InProgress, IssueDescription = "x" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.CancelRequestAsync(1, "cust");
 
@@ -294,7 +291,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(CancelRequestAsync_Succeeds_WhenRequested));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust", Status = RequestStatus.Requested, IssueDescription = "x" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.CancelRequestAsync(1, "cust");
 
@@ -309,7 +306,7 @@ public class ServiceRequestServiceTests
         ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, BaseCharge = 100, SlaHours = 4, Name = "Cat" });
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1), Status = RequestStatus.InProgress, Priority = Priority.High, IssueDescription = "x", CustomerId = "c" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.UpdateStatusWithBillingAsync(new UpdateStatusDto { RequestId = 1, Status = RequestStatus.Completed, ResolutionNotes = "done" });
 
@@ -327,7 +324,7 @@ public class ServiceRequestServiceTests
         ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, BaseCharge = 100, SlaHours = 4, Name = "Cat" });
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1), Status = RequestStatus.InProgress, IssueDescription = "x", CustomerId = "c" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.UpdateStatusAsync(1, RequestStatus.Completed, "done");
 
@@ -342,7 +339,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(RespondToAssignmentAsync_AcceptSetsPlannedStart));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "tech1", Status = RequestStatus.Assigned, IssueDescription = "x", CustomerId = "c" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
         var planned = DateTime.UtcNow.AddHours(2);
 
         var ok = await svc.RespondToAssignmentAsync(1, "tech1", true, planned);
@@ -357,7 +354,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(RespondToAssignmentAsync_RejectClearsTechnician));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "tech1", Status = RequestStatus.Assigned, IssueDescription = "x", CustomerId = "c" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.RespondToAssignmentAsync(1, "tech1", false, null);
 
@@ -373,7 +370,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(GetServiceRequestByIdAsync_AllowsManager));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust1", IssueDescription = "x" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var req = await svc.GetServiceRequestByIdAsync(1, "mgr", "Manager");
 
@@ -386,7 +383,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(GetServiceRequestByIdAsync_DeniesOtherCustomer));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust1", IssueDescription = "x" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var req = await svc.GetServiceRequestByIdAsync(1, "cust2", "Customer");
 
@@ -402,7 +399,7 @@ public class ServiceRequestServiceTests
             new ServiceRequest { Id = 2, CustomerId = "c2", IssueDescription = "x" }
         );
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var mine = await svc.GetCustomerRequestsAsync("c1");
 
@@ -419,7 +416,7 @@ public class ServiceRequestServiceTests
             new ServiceRequest { Id = 2, TechnicianId = "t2", IssueDescription = "x", CustomerId = "c" }
         );
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var tasks = await svc.GetTechnicianTasksAsync("t1");
 
@@ -433,7 +430,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(StartWorkAsync_FailsForDifferentTechnician));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.Assigned, IssueDescription = "x", CustomerId = "c" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.StartWorkAsync(1, "t2", DateTime.UtcNow);
 
@@ -446,7 +443,7 @@ public class ServiceRequestServiceTests
         var ctx = CreateContext(nameof(FinishWorkAsync_FailsForDifferentTechnician));
         ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.InProgress, Category = new ServiceCategory { BaseCharge = 50, SlaHours = 2, Name = "Cat" }, IssueDescription = "x", CustomerId = "c" });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var ok = await svc.FinishWorkAsync(1, "t2", DateTime.UtcNow);
 
@@ -471,7 +468,7 @@ public class ServiceRequestServiceTests
             CustomerId = "c"
         });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var stats = await svc.GetDashboardStatsAsync() as dynamic;
 
@@ -494,7 +491,7 @@ public class ServiceRequestServiceTests
             CustomerId = "c"
         });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var stats = await svc.GetDashboardStatsAsync() as dynamic;
 
@@ -515,7 +512,7 @@ public class ServiceRequestServiceTests
             CustomerId = "c"
         });
         await ctx.SaveChangesAsync();
-        var svc = new ServiceRequestService(ctx, CreateBilling(ctx), CreateNotificationQueue());
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
 
         var stats = await svc.GetDashboardStatsAsync() as dynamic;
         var workload = (IEnumerable<dynamic>)stats.workload;

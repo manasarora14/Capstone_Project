@@ -3,8 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using ServiceManagementApi.Data;
 using ServiceManagementApi.Models;
+using System.Threading.Tasks;
 using ServiceManagementApi.Services;
 using Xunit;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.InMemory;
+using System.Linq;
+
 
 namespace ServiceManagementApi.Tests.Services;
 
@@ -25,7 +30,8 @@ public class AdminServiceTests
         ctx.Users.Add(new ApplicationUser { Id = "1", Email = "u1@test.com", FullName = "User One" });
         await ctx.SaveChangesAsync();
 
-        var mockMgr = TestHelpers.MockUserManager<ApplicationUser>(ctx.Users.ToList());
+        var users = await ctx.Users.ToListAsync();
+        var mockMgr = TestHelpers.MockUserManager<ApplicationUser>(users);
         mockMgr.Setup(m => m.GetRolesAsync(It.IsAny<ApplicationUser>()))
             .ReturnsAsync(new List<string> { "Customer" });
 

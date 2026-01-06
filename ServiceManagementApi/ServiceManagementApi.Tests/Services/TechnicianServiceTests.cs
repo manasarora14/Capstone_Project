@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using ServiceManagementApi.Data;
 using ServiceManagementApi.Models;
 using ServiceManagementApi.Services;
+using System;
+using System.Threading.Tasks;   
+using System.Linq;
 using Xunit;
 
 namespace ServiceManagementApi.Tests.Services;
@@ -28,7 +31,9 @@ public class TechnicianServiceTests
             WorkStartedAt = DateTime.UtcNow.AddHours(-2),
             WorkEndedAt = DateTime.UtcNow.AddHours(-1),
             TotalPrice = 150,
-            Category = new ServiceCategory { BaseCharge = 100, SlaHours = 4 }
+            Category = new ServiceCategory { BaseCharge = 100, SlaHours = 4 },
+            IssueDescription = "Test issue", // Fix for CS9035: required property
+            CustomerId = "customer1"         // Fix for CS9035: required property
         });
         ctx.Invoices.Add(new Invoice { Id = 1, ServiceRequestId = 1, Amount = 150, Status = "Paid" });
         await ctx.SaveChangesAsync();

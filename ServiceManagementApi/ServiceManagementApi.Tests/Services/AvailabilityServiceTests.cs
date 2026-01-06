@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+ // Add this using directive
 using ServiceManagementApi.Data;
 using ServiceManagementApi.Models;
 using ServiceManagementApi.Services;
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceManagementApi.Tests.Services;
@@ -20,13 +23,15 @@ public class AvailabilityServiceTests
     public async Task GetAvailableTechniciansAsync_FiltersBusyTech()
     {
         var ctx = CreateContext(nameof(GetAvailableTechniciansAsync_FiltersBusyTech));
-        ctx.ServiceRequests.Add(new ServiceRequest
+        _ = ctx.ServiceRequests.Add(new ServiceRequest
         {
             Id = 1,
             TechnicianId = "tech1",
             Status = RequestStatus.Assigned,
             ScheduledDate = DateTime.UtcNow,
-            Category = new ServiceCategory { SlaHours = 2 }
+            Category = new ServiceCategory { SlaHours = 2 },
+            IssueDescription = "Test issue",
+            CustomerId = "customer1"
         });
         await ctx.SaveChangesAsync();
 
@@ -48,7 +53,9 @@ public class AvailabilityServiceTests
             TechnicianId = "tech1",
             Status = RequestStatus.Assigned,
             ScheduledDate = DateTime.UtcNow,
-            Category = new ServiceCategory { SlaHours = 1 }
+            Category = new ServiceCategory { SlaHours = 1 },
+            IssueDescription = "Test issue",
+            CustomerId = "customer1"
         });
         await ctx.SaveChangesAsync();
 
