@@ -1,0 +1,82 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>
+      <mat-icon>account_balance_wallet</mat-icon> 
+      My Bills & Invoices
+    </h2>
+    <p class="subtitle">View and manage your service payments</p>
+  </div>
+
+  @if (invoices().length > 0) {
+    <div class="table-container">
+      <table mat-table [dataSource]="invoices()" class="billing-table">
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>Invoice #</th>
+          <td mat-cell *matCellDef="let inv">#{{inv.id}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="request">
+          <th mat-header-cell *matHeaderCellDef>Request Ref</th>
+          <td mat-cell *matCellDef="let inv">#{{inv.serviceRequestId}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let inv">₹{{inv.amount}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Issued</th>
+          <td mat-cell *matCellDef="let inv">{{inv.generatedDate | date:'mediumDate'}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let inv">
+            <mat-chip class="status-chip" [ngClass]="inv.status.toLowerCase()">{{inv.status | uppercase}}</mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let inv">
+            @if (inv.status === 'Pending') {
+              <button mat-flat-button color="primary" (click)="payInvoice(inv.id)">
+                <mat-icon>payment</mat-icon>
+                PAY NOW
+              </button>
+            } @else {
+              <div class="paid-badge"><mat-icon>verified</mat-icon> PAID</div>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="['id','request','amount','date','status','actions']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['id','request','amount','date','status','actions'];"></tr>
+      </table>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <mat-icon>receipt_long</mat-icon>
+      <h3>No invoices found</h3>
+      <p>Invoices are generated automatically once a service request is completed.</p>
+    </div>
+  }
+</div>
+
+<!-- Payment options dialog (simple overlay) -->
+<div class="payment-overlay" *ngIf="showPaymentDialog()">
+  <div class="payment-modal">
+    <h3>Select Payment Method</h3>
+    <div class="methods">
+      <button mat-button *ngFor="let m of paymentMethods" [class.selected]="paymentMethod === m" (click)="paymentMethod = m">
+        {{m}}
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button mat-stroked-button (click)="closePaymentDialog()">Cancel</button>
+      <button mat-flat-button color="primary" [disabled]="!paymentMethod" (click)="confirmPayment()">Pay {{paymentMethod}}</button>
+    </div>
+  </div>
+</div>

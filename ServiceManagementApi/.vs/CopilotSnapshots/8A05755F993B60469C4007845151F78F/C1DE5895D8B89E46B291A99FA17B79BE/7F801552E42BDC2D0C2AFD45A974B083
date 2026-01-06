@@ -1,0 +1,259 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.DTOs;
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.Services;
+
+public interface ITechnicianService
+{
+    Task<TechnicianAvailabilityResponseDto> AddAvailabilityAsync(AvailabilityDto dto);
+    Task<bool> RemoveAvailabilityAsync(int id, string technicianId);
+    Task<List<TechnicianAvailabilityResponseDto>> GetAvailabilityAsync(string technicianId);
+
+    // Scheduling
+    Task<bool> ScheduleVisitAsync(ScheduleVisitDto dto);
+
+    // Find available technicians for a slot
+    Task<List<AvailableTechDto>> GetAvailableTechniciansAsync(DateTime scheduledUtc, double durationHours);
+
+    // Workload
+    Task<TechnicianWorkloadDto> GetWorkloadAsync(string technicianId);
+}
+
+public class TechnicianService : ITechnicianService
+{
+    private readonly ApplicationDbContext _context;
+
+    public TechnicianService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<TechnicianAvailabilityResponseDto> AddAvailabilityAsync(AvailabilityDto dto)
+    {
+        if (dto.EndUtc <= dto.StartUtc) throw new ArgumentException("End must be after start");
+
+        var avail = new TechnicianAvailability
+        {
+            TechnicianId = dto.TechnicianId,
+            StartUtc = dto.StartUtc,
+            EndUtc = dto.EndUtc
+        };
+        _context.TechnicianAvailabilities.Add(avail);
+        await _context.SaveChangesAsync();
+
+        return new TechnicianAvailabilityResponseDto
+        {
+            Id = avail.Id,
+            TechnicianId = avail.TechnicianId,
+            StartUtc = avail.StartUtc,
+            EndUtc = avail.EndUtc
+        };
+    }
+
+    public async Task<bool> RemoveAvailabilityAsync(int id, string technicianId)
+    {
+        var avail = await _context.TechnicianAvailabilities.FindAsync(id);
+        if (avail == null || avail.TechnicianId != technicianId) return false;
+        _context.TechnicianAvailabilities.Remove(avail);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<TechnicianAvailabilityResponseDto>> GetAvailabilityAsync(string technicianId)
+    {
+        return await _context.TechnicianAvailabilities
+            .Where(a => a.TechnicianId == technicianId)
+            .OrderBy(a => a.StartUtc)
+            .Select(a => new TechnicianAvailabilityResponseDto { Id = a.Id, TechnicianId = a.TechnicianId, StartUtc = a.StartUtc, EndUtc = a.EndUtc })
+            .ToListAsync();
+    }
+
+    // New: find technicians available for the full requested window
+    public async Task<List<AvailableTechDto>> GetAvailableTechniciansAsync(DateTime scheduledUtc, double durationHours)
+    {
+        var requestedStart = scheduledUtc;
+        var requestedEnd = scheduledUtc.AddHours(durationHours);
+
+        // Find availability entries that fully cover the requested window
+        var matchingAvail = await _context.TechnicianAvailabilities
+            .Where(a => a.StartUtc <= requestedStart && a.EndUtc >= requestedEnd)
+            .ToListAsync();
+
+        var techIds = matchingAvail.Select(a => a.TechnicianId).Distinct().ToList();
+
+        if (!techIds.Any()) return new List<AvailableTechDto>();
+
+        // Exclude technicians with conflicting assignments (overlap)
+        // A conflict exists if any non-completed request for the tech has an occupied window overlapping requested window
+        var busyTechs = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .Where(r => r.TechnicianId != null && techIds.Contains(r.TechnicianId) && r.Status != RequestStatus.Completed)
+            .ToListAsync();
+
+        var techsToExclude = new HashSet<string>();
+
+        foreach (var r in busyTechs)
+        {
+            var existingStart = r.ScheduledDate;
+            // Determine existing duration: prefer stored TotalPrice? No. Use Category.SlaHours as heuristic
+            var existingDuration = r.Category?.SlaHours ?? 1;
+            var existingEnd = existingStart.AddHours(existingDuration);
+
+            // overlap check
+            if (existingStart < requestedEnd && requestedStart < existingEnd)
+            {
+                if (!string.IsNullOrEmpty(r.TechnicianId)) techsToExclude.Add(r.TechnicianId);
+            }
+        }
+
+        var availableTechIds = techIds.Except(techsToExclude).ToList();
+
+        // Fetch user names from AspNetUsers (Identity)
+        var users = await _context.Users
+            .Where(u => availableTechIds.Contains(u.Id))
+            .Select(u => new { u.Id, u.UserName })
+            .ToListAsync();
+
+        var result = new List<AvailableTechDto>();
+
+        foreach (var id in availableTechIds)
+        {
+            var avail = matchingAvail.First(a => a.TechnicianId == id);
+            var user = users.FirstOrDefault(u => u.Id == id);
+            result.Add(new AvailableTechDto
+            {
+                TechnicianId = id,
+                UserName = user?.UserName,
+                AvailableFromUtc = avail.StartUtc,
+                AvailableToUtc = avail.EndUtc
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<bool> ScheduleVisitAsync(ScheduleVisitDto dto)
+    {
+        // compute requested window
+        var requestedStart = dto.ScheduledUtc;
+        var requestedEnd = dto.ScheduledUtc.AddHours(dto.DurationHours);
+
+        // 1. Confirm availability window exists that covers the entire requested window
+        var availExists = await _context.TechnicianAvailabilities
+            .AnyAsync(a => a.TechnicianId == dto.TechnicianId && a.StartUtc <= requestedStart && a.EndUtc >= requestedEnd);
+
+        if (!availExists) return false;
+
+        // 2. Check technician not already booked for overlapping time (conflict with other service requests)
+        var conflict = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .Where(r => r.TechnicianId == dto.TechnicianId && r.Status != RequestStatus.Completed)
+            .AnyAsync(r =>
+            {
+                var existingStart = r.ScheduledDate;
+                var existingDuration = r.Category?.SlaHours ?? 1;
+                var existingEnd = existingStart.AddHours(existingDuration);
+                return existingStart < requestedEnd && requestedStart < existingEnd;
+            });
+
+        if (conflict) return false;
+
+        // 3. Assign the technician and update status to Assigned
+        var request = await _context.ServiceRequests.FindAsync(dto.ServiceRequestId);
+        if (request == null) return false;
+
+        request.TechnicianId = dto.TechnicianId;
+        request.Status = RequestStatus.Assigned;
+        request.ScheduledDate = dto.ScheduledUtc;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<TechnicianWorkloadDto> GetWorkloadAsync(string technicianId)
+    {
+        // Fetch completed requests for this technician
+        var requests = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .Where(r => r.TechnicianId == technicianId && r.Status == RequestStatus.Completed)
+            .ToListAsync();
+
+        double totalHours = 0;
+        decimal totalEarnings = 0;
+
+        foreach (var r in requests)
+        {
+            if (r.CompletedAt.HasValue)
+            {
+                totalHours += (r.CompletedAt.Value - r.CreatedAt).TotalHours; // approximate; consider Scheduled duration instead if you have it
+            }
+            else
+            {
+                // fallback: assume SLA hours as job duration
+                totalHours += r.Category?.SlaHours ?? 0;
+            }
+        }
+
+        // Compute earnings from invoices for these requests (preferred) otherwise use ServiceRequest.TotalPrice
+        var requestIds = requests.Select(r => r.Id).ToList();
+        if (requestIds.Any())
+        {
+            var invoiceSum = await _context.Invoices
+                .Where(i => requestIds.Contains(i.ServiceRequestId))
+                .SumAsync(i => (decimal?)i.Amount) ?? 0m;
+
+            if (invoiceSum > 0m)
+            {
+                totalEarnings = invoiceSum;
+            }
+            else
+            {
+                totalEarnings = requests.Sum(r => r.TotalPrice);
+            }
+        }
+
+        // Monthly breakdown using invoices if available, otherwise using requests' TotalPrice
+        List<object> monthly;
+        if (requestIds.Any())
+        {
+            // Materialize invoices first to avoid EF translation issues, then group in-memory
+            var invoicesList = await _context.Invoices
+                .Where(i => requestIds.Contains(i.ServiceRequestId))
+                .ToListAsync();
+
+            var invoiceMonthly = invoicesList
+                .GroupBy(i => new { i.GeneratedDate.Year, i.GeneratedDate.Month })
+                .Select(g => new { month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"), total = g.Sum(i => i.Amount) })
+                .OrderBy(x => x.month)
+                .ToList<object>();
+
+            if (invoiceMonthly.Any())
+            {
+                monthly = invoiceMonthly;
+            }
+            else
+            {
+                monthly = requests
+                    .Where(r => r.CompletedAt.HasValue)
+                    .GroupBy(r => new { Year = r.CompletedAt.Value.Year, Month = r.CompletedAt.Value.Month })
+                    .Select(g => new { month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"), total = g.Sum(r => r.TotalPrice) })
+                    .OrderBy(x => x.month)
+                    .ToList<object>();
+            }
+        }
+        else
+        {
+            monthly = new List<object>();
+        }
+
+        return new TechnicianWorkloadDto
+        {
+            TechnicianId = technicianId,
+            TotalHoursWorked = Math.Round(totalHours, 1),
+            TotalEarnings = totalEarnings,
+            MonthlyEarnings = monthly
+        };
+    }
+}

@@ -1,0 +1,23 @@
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using ServiceManagementApi.Controllers;
+using ServiceManagementApi.Services;
+using Xunit;
+
+namespace ServiceManagementApi.Tests.Controllers
+{
+    public class AdminControllerTests
+    {
+        [Fact]
+        public async Task GetStatistics_ReturnsOk()
+        {
+            var mockService = new Mock<IAdminService>();
+            mockService.Setup(s => s.GetStatisticsAsync()).ReturnsAsync(new { Users = 10 });
+
+            var controller = new AdminController(mockService.Object);
+            var result = await controller.GetStatistics();
+            Assert.IsType<OkObjectResult>(result);
+        }
+    }
+}

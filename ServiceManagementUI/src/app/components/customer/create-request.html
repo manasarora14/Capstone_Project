@@ -1,0 +1,74 @@
+<div class="page-container small-width">
+  <div class="page-header">
+    <h2>
+      <mat-icon>add_circle</mat-icon> 
+      Raise Service Request
+    </h2>
+    <p class="subtitle">Tell us what you need and we'll handle the rest</p>
+  </div>
+
+  <mat-card class="custom-card">
+    <mat-card-content class="form-content">
+      <form (submit)="submit()">
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Select Service Category</mat-label>
+          <mat-select [(ngModel)]="request.categoryId" name="cat" required>
+            @for (c of categories(); track c.id) {
+              <mat-option [value]="c.id">{{c.name}}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (getSelectedCategory(); as selected) {
+  <div class="info-box">
+    <p><strong>Description:</strong> {{selected.description}}</p>
+    
+    <div class="info-row">
+      <span class="fee">💰 Fee: {{ selected.baseCharge | currency:'INR':'symbol':'1.2-2' }}</span>
+      
+      <span class="sla">⏱️ Expected: {{ selected.slaHours }} hours</span>
+    </div>
+
+    <p class="sla-note" *ngIf="selected.slaHours > 48">
+      <small>* Note: This is a complex service with an extended turnaround.</small>
+    </p>
+  </div>
+}
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Detailed Issue Description</mat-label>
+          <textarea matInput [(ngModel)]="request.issueDescription" name="desc" rows="4" 
+                    placeholder="Describe the problem in detail..." required></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Preferred Scheduled Date</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="request.scheduledDate" name="date">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Preferred Time</mat-label>
+          <input matInput type="time" [(ngModel)]="request.scheduledTime" name="time">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Priority</mat-label>
+          <mat-select [(ngModel)]="request.priority" name="priority">
+            <mat-option [value]="0">Low</mat-option>
+            <mat-option [value]="1">Medium</mat-option>
+            <mat-option [value]="2">High</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="action-row">
+          <button mat-flat-button color="primary" type="submit" class="submit-btn">
+            <mat-icon>send</mat-icon> SUBMIT REQUEST
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,75 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ServiceManagementApi.Services;
+using ServiceManagementApi.DTOs;
+
+namespace ServiceManagementApi.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+[Authorize(Roles = "Admin,Manager")]
+public class AdminController : ControllerBase
+{
+    private readonly IAdminService _adminService;
+
+    public AdminController(IAdminService adminService)
+    {
+        _adminService = adminService;
+    }
+
+    [HttpGet("users")]
+    public async Task<IActionResult> GetUsers()
+    {
+        var users = await _adminService.GetAllUsersWithRolesAsync();
+        return Ok(users);
+    }
+
+    [HttpPost("update-role")]
+    public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto model)
+    {
+        var result = await _adminService.UpdateUserRoleAsync(model.UserId, model.NewRole);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        return Ok(new { message = $"Role updated to {model.NewRole} successfully" });
+    }
+
+    // --- Category Management (Admin only) ---
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetCategories()
+    {
+        var categories = await _adminService.GetCategoriesAsync();
+        return Ok(categories);
+    }
+
+    [HttpGet("categories/{id}")]
+    public async Task<IActionResult> GetCategory(int id)
+    {
+        var category = await _adminService.GetCategoryByIdAsync(id);
+        if (category == null) return NotFound();
+        return Ok(category);
+    }
+
+    [HttpPost("categories")]
+    public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto dto)
+    {
+        var created = await _adminService.CreateCategoryAsync(dto);
+        return CreatedAtAction(nameof(GetCategory), new { id = created.Id }, created);
+    }
+
+    [HttpPut("categories/{id}")]
+    public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryDto dto)
+    {
+        if (id != dto.Id) return BadRequest();
+        var success = await _adminService.UpdateCategoryAsync(dto);
+        return success ? Ok() : NotFound();
+    }
+
+    [HttpDelete("categories/{id}")]
+    public async Task<IActionResult> DeleteCategory(int id)
+    {
+        var success = await _adminService.DeleteCategoryAsync(id);
+        return success ? Ok() : NotFound();
+    }
+}

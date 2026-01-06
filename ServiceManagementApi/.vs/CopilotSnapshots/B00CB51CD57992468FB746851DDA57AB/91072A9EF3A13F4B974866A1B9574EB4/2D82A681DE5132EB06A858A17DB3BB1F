@@ -1,0 +1,23 @@
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using ServiceManagementApi.Controllers;
+using ServiceManagementApi.Services;
+using Xunit;
+
+namespace ServiceManagementApi.Tests.Controllers
+{
+    public class DashboardControllerTests
+    {
+        [Fact]
+        public async Task GetDashboard_ReturnsOk()
+        {
+            var mockService = new Mock<IDashboardService>();
+            mockService.Setup(s => s.GetDashboardAsync()).ReturnsAsync(new { OpenRequests = 5 });
+
+            var controller = new DashboardController(mockService.Object);
+            var result = await controller.GetDashboard();
+            Assert.IsType<OkObjectResult>(result);
+        }
+    }
+}

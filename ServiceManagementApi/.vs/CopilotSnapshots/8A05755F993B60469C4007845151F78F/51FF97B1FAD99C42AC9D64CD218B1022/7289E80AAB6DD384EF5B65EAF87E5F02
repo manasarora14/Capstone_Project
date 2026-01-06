@@ -1,0 +1,93 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.DTOs;
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.Services;
+
+public interface ITechnicianService
+{
+    Task<TechnicianAvailabilityResponseDto> AddAvailabilityAsync(AvailabilityDto dto);
+    Task<bool> RemoveAvailabilityAsync(int id, string technicianId);
+    Task<List<TechnicianAvailabilityResponseDto>> GetAvailabilityAsync(string technicianId);
+
+    // Scheduling
+    Task<bool> ScheduleVisitAsync(ScheduleVisitDto dto);
+
+    // Workload
+    Task<TechnicianWorkloadDto> GetWorkloadAsync(string technicianId);
+}
+
+public class TechnicianService : ITechnicianService
+{
+    private readonly ApplicationDbContext _context;
+
+    public TechnicianService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<TechnicianAvailabilityResponseDto> AddAvailabilityAsync(AvailabilityDto dto)
+    {
+        if (dto.EndUtc <= dto.StartUtc) throw new ArgumentException("End must be after start");
+
+        // create a minimal record in a table we removed earlier - instead store nothing and return a dummy
+        // To fully remove availability tracking, this service remains as a stub that returns the DTO back.
+        return new TechnicianAvailabilityResponseDto
+        {
+            Id = 0,
+            TechnicianId = dto.TechnicianId,
+            StartUtc = dto.StartUtc,
+            EndUtc = dto.EndUtc
+        };
+    }
+
+    public async Task<bool> RemoveAvailabilityAsync(int id, string technicianId)
+    {
+        // stubbed out - nothing to remove
+        return true;
+    }
+
+    public async Task<List<TechnicianAvailabilityResponseDto>> GetAvailabilityAsync(string technicianId)
+    {
+        return new List<TechnicianAvailabilityResponseDto>();
+    }
+
+    public async Task<bool> ScheduleVisitAsync(ScheduleVisitDto dto)
+    {
+        // fallback to simple assign via ServiceRequestService responsibilities
+        var request = await _context.ServiceRequests.FindAsync(dto.ServiceRequestId);
+        if (request == null) return false;
+
+        request.TechnicianId = dto.TechnicianId;
+        request.Status = RequestStatus.Assigned;
+        request.ScheduledDate = dto.ScheduledUtc;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<TechnicianWorkloadDto> GetWorkloadAsync(string technicianId)
+    {
+        var requests = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .Where(r => r.TechnicianId == technicianId && r.Status == RequestStatus.Completed)
+            .ToListAsync();
+
+        double totalHours = 0; decimal totalEarnings = 0;
+        foreach (var r in requests)
+        {
+            if (r.CompletedAt.HasValue) totalHours += (r.CompletedAt.Value - r.CreatedAt).TotalHours;
+            else totalHours += r.Category?.SlaHours ?? 0;
+        }
+
+        var requestIds = requests.Select(r => r.Id).ToList();
+        if (requestIds.Any())
+        {
+            var invoiceSum = await _context.Invoices.Where(i => requestIds.Contains(i.ServiceRequestId)).SumAsync(i => (decimal?)i.Amount) ?? 0m;
+            if (invoiceSum > 0m) totalEarnings = invoiceSum; else totalEarnings = requests.Sum(r => r.TotalPrice);
+        }
+
+        return new TechnicianWorkloadDto { TechnicianId = technicianId, TotalHoursWorked = Math.Round(totalHours,1), TotalEarnings = totalEarnings, MonthlyEarnings = new List<object>() };
+    }
+}

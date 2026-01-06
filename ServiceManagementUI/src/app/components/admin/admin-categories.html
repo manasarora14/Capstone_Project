@@ -1,0 +1,69 @@
+<div class="admin-container service-categories">
+  <h2>Service Categories & Pricing</h2>
+
+  <table mat-table [dataSource]="categories()" class="mat-elevation-z8">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let c">{{c.name}}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="baseCharge">
+  <th mat-header-cell *matHeaderCellDef>Charge</th>
+  <td mat-cell *matCellDef="let c">
+    {{ c.baseCharge | currency:'INR':'symbol':'1.2-2' }}
+  </td>
+</ng-container>
+
+    <ng-container matColumnDef="slaHours">
+      <th mat-header-cell *matHeaderCellDef>SLA (hours)</th>
+      <td mat-cell *matCellDef="let c">
+  {{ c.slaHours }} hours
+</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actionsCat">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let c">
+        <button mat-icon-button color="primary" (click)="editCategory(c)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteCategory(c.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="categoryColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: categoryColumns;"></tr>
+  </table>
+
+  <div class="category-form">
+    <h3>{{editing ? 'Edit' : 'Create'}} Category</h3>
+    <form (ngSubmit)="saveCategory()">
+      <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput [(ngModel)]="currentCategory.name" name="name" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Description</mat-label>
+        <input matInput [(ngModel)]="currentCategory.description" name="description" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Charge</mat-label>
+        <input matInput type="number" [(ngModel)]="currentCategory.baseCharge" name="baseCharge" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>SLA Hours</mat-label>
+        <input matInput type="number" [(ngModel)]="currentCategory.slaHours" name="slaHours" required />
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit">{{editing ? 'Update' : 'Create'}}</button>
+        <button mat-button type="button" (click)="resetForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

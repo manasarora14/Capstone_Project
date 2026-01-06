@@ -1,0 +1,111 @@
+.page-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.page-header h2 {
+  color: #fb8c00; /* Orange theme for monitoring */
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.custom-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  overflow: hidden;
+}
+
+.uniform-table {
+  width: 100%;
+}
+
+/* Technician Column Styling */
+.unassigned-text {
+  color: #d32f2f;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* Status Badges - Unified with MyServices */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Align status colors with `my-service` styles (light backgrounds + dark text) */
+.status-requested { background: #e3f2fd; color: #1976d2; }
+.status-assigned { background: #fff3e0; color: #f57c00; }
+.status-progress { background: #f3e5f5; color: #7b1fa2; }
+.status-completed { background: #e8f5e9; color: #2e7d32; }
+.status-default { background: #f3f4f6; color: #374151; }
+.status-cancelled { background: #ffebee; color: #c62828; }
+
+/* Notes Preview Styling */
+.notes-preview {
+  display: block;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #666;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: #999;
+}
+
+.empty-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.search-field {
+  width: 350px;
+  margin-top: 10px;
+}
+
+.truncate-text {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.priority-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+
+.priority-badge.high { background: transparent; color: inherit; font-weight: bold; }
+.priority-badge.medium { background: transparent; color: inherit; font-weight: bold; }
+.priority-badge.low { background: transparent; color: inherit; font-weight: bold; }
+
+
+::ng-deep .status-requested { background-color: #e3f2fd !important; color: #1976d2 !important; }
+::ng-deep .status-assigned { background-color: #fff3e0 !important; color: #f57c00 !important; }
+::ng-deep .status-progress { background-color: #f3e5f5 !important; color: #7b1fa2 !important; }
+::ng-deep .status-completed { background-color: #e8f5e9 !important; color: #2e7d32 !important; }
+::ng-deep .status-default { background-color: #f3f4f6 !important; color: #374151 !important; }
+::ng-deep .status-cancelled { background-color: #ffebee !important; color: #c62828 !important; }

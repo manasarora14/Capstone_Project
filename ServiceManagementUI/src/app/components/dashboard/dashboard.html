@@ -1,0 +1,100 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Welcome  {{ auth.currentUser()?.name || formatName(auth.currentUser()?.email) }}</h2>
+    <p class="subtitle">Role: <strong>{{ auth.userRole() }}</strong> • Select a module to manage your tasks</p>
+  </div>
+
+  <div class="stats-grid">
+    
+    @if (auth.userRole() === 'Admin') {
+      <mat-card class="stat-card blue" routerLink="/admin/users">
+        <mat-icon class="card-icon">person_add</mat-icon>
+        <mat-card-header><mat-card-title>Assign Users</mat-card-title></mat-card-header>
+        <mat-card-content><p>Manage user roles and permissions.</p></mat-card-content>
+        <mat-card-actions><button mat-button>ASSIGN ROLES</button></mat-card-actions>
+      </mat-card>
+
+      <mat-card class="stat-card indigo" routerLink="/admin/categories">
+        <mat-icon class="card-icon">category</mat-icon>
+        <mat-card-header><mat-card-title>Manage Categories</mat-card-title></mat-card-header>
+        <mat-card-content><p>Create and manage service categories, charges, and SLAs.</p></mat-card-content>
+        <mat-card-actions><button mat-button>MANAGE CATEGORIES</button></mat-card-actions>
+      </mat-card>
+
+      
+    }
+
+    @if (auth.userRole() === 'Manager') {
+      <mat-card class="stat-card indigo" routerLink="/assign">
+        <mat-icon class="card-icon">assignment_ind</mat-icon>
+        <mat-card-header><mat-card-title>Assign Requests</mat-card-title></mat-card-header>
+        <mat-card-content><p>Review new tickets and assign them to technicians.</p></mat-card-content>
+        <mat-card-actions><button mat-button>MANAGE TASKS</button></mat-card-actions>
+      </mat-card>
+
+      <mat-card class="stat-card green" routerLink="/reports">
+        <mat-icon class="card-icon">assessment</mat-icon>
+        <mat-card-header><mat-card-title>Reports</mat-card-title></mat-card-header>
+        <mat-card-content><p>View analytics and monthly revenue reports.</p></mat-card-content>
+        <mat-card-actions><button mat-button>VIEW REPORTS</button></mat-card-actions>
+      </mat-card>
+
+      <mat-card class="stat-card orange" routerLink="/monitor">
+        <mat-icon class="card-icon">monitoring</mat-icon>
+        <mat-card-header><mat-card-title>Monitor Progress</mat-card-title></mat-card-header>
+        <mat-card-content><p>Track ongoing work and check real-time SLA status.</p></mat-card-content>
+        <mat-card-actions><button mat-button>VIEW MONITOR</button></mat-card-actions>
+      </mat-card>
+
+      
+      <!-- Manager should not see billing page; billing is customer-only now -->
+    }
+
+    @if (auth.userRole() === 'Technician') {
+      <mat-card class="stat-card blue" routerLink="/tasks">
+        <mat-icon class="card-icon">build_circle</mat-icon>
+        <mat-card-header><mat-card-title>Work Orders</mat-card-title></mat-card-header>
+        <mat-card-content><p>View your assigned jobs and update repair progress.</p></mat-card-content>
+        <mat-card-actions><button mat-button>MY TASKS</button></mat-card-actions>
+      </mat-card>
+      <mat-card class="stat-card green" routerLink="/tech/workload">
+        <mat-icon class="card-icon">insights</mat-icon>
+        <mat-card-header><mat-card-title>My Workload</mat-card-title></mat-card-header>
+        <mat-card-content><p>View hours worked and earnings summary.</p></mat-card-content>
+        <mat-card-actions><button mat-button>VIEW WORKLOAD</button></mat-card-actions>
+      </mat-card>
+
+      
+    }
+
+    @if (auth.userRole() === 'Customer') {
+      <mat-card class="stat-card orange" routerLink="/create-request">
+        <mat-icon class="card-icon">add_task</mat-icon>
+        <mat-card-header><mat-card-title>New Request</mat-card-title></mat-card-header>
+        <mat-card-content><p>Facing an issue? Raise a service ticket for help.</p></mat-card-content>
+        <mat-card-actions><button mat-button>GET HELP</button></mat-card-actions>
+      </mat-card>
+
+      <mat-card class="stat-card blue" routerLink="/my-services">
+        <mat-icon class="card-icon">history</mat-icon>
+        <mat-card-header><mat-card-title>Request History</mat-card-title></mat-card-header>
+        <mat-card-content><p>Track status updates for your current and past services.</p></mat-card-content>
+        <mat-card-actions><button mat-button>VIEW HISTORY</button></mat-card-actions>
+      </mat-card>
+
+      <mat-card class="stat-card purple" routerLink="/service-catalog">
+        <mat-icon class="card-icon">store</mat-icon>
+        <mat-card-header><mat-card-title>Service Catalog</mat-card-title></mat-card-header>
+        <mat-card-content><p>Browse available services, pricing, and SLA information.</p></mat-card-content>
+        <mat-card-actions><button mat-button>VIEW CATALOG</button></mat-card-actions>
+      </mat-card>
+
+      <mat-card class="stat-card green" routerLink="/billing">
+        <mat-icon class="card-icon">receipt_long</mat-icon>
+        <mat-card-header><mat-card-title>My Bills</mat-card-title></mat-card-header>
+        <mat-card-content><p>Check pending invoices and your payment history.</p></mat-card-content>
+        <mat-card-actions><button mat-button>VIEW INVOICES</button></mat-card-actions>
+      </mat-card>
+    }
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<div class="auth-wrapper">
+  <div class="auth-container">
+    <div class="auth-header">
+      <mat-icon class="brand-icon">person_add</mat-icon>
+      <h1>Join Us</h1>
+      <p>Create your service management account</p>
+    </div>
+
+    <mat-card class="custom-card">
+      <mat-card-content class="form-content">
+        
+        <form (submit)="onRegister()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input matInput [(ngModel)]="registerData.name" name="name" type="text" required placeholder="First Last">
+            <mat-icon matSuffix>badge</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <input matInput [(ngModel)]="registerData.email" name="email" type="email" required placeholder="name@example.com">
+            <mat-icon matSuffix>email</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput [(ngModel)]="registerData.password" name="password" type="password" required placeholder="Enter strong password">
+            <mat-icon matSuffix>lock</mat-icon>
+            <mat-hint>Include uppercase, digit, and symbol</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput [(ngModel)]="registerData.confirmPassword" name="confirmPassword" type="password" required placeholder="Re-enter password">
+            <mat-icon matSuffix>lock</mat-icon>
+          </mat-form-field>
+
+          @if (errors().length > 0) {
+            <div class="error-box">
+              <mat-icon>report_problem</mat-icon>
+              <ul>
+                @for (error of errors(); track error) {
+                  <li>{{ error }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <button mat-flat-button class="auth-btn" type="submit">
+            CREATE ACCOUNT
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <span>Already have an account?</span>
+          <a routerLink="/login">Sign In</a>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

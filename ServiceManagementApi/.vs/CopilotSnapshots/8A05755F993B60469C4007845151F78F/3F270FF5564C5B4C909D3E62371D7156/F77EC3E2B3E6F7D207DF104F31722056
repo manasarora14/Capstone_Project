@@ -1,0 +1,57 @@
+﻿using Microsoft.AspNetCore.Identity;
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.Data;
+
+public static class DbSeeder
+{
+    public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
+    {
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var context = serviceProvider.GetRequiredService<ApplicationDbContext>(); // Get Context
+
+        // 1. Create Roles (Existing code...)
+        string[] roles = { "Admin", "Manager", "Technician", "Customer" };
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+                await roleManager.CreateAsync(new IdentityRole(role));
+        }
+
+        // 2. Seed Users (Existing code...)
+        var defaultPassword = "Test@1234";
+        var usersToSeed = new List<(string Email, string Role)>
+        {
+            ("admin@gmail.com", "Admin"),
+            ("manager@gmail.com", "Manager"),
+            ("technician@gmail.com", "Technician"),
+            ("user@gmail.com", "Customer")
+        };
+
+        foreach (var item in usersToSeed)
+        {
+            var user = await userManager.FindByEmailAsync(item.Email);
+            if (user == null)
+            {
+                user = new IdentityUser { UserName = item.Email, Email = item.Email, EmailConfirmed = true };
+                var result = await userManager.CreateAsync(user, defaultPassword);
+                if (result.Succeeded) await userManager.AddToRoleAsync(user, item.Role);
+            }
+        }
+
+        // 3. SEED SERVICE CATEGORIES (New code)
+        if (!context.ServiceCategories.Any())
+        {
+            var categories = new List<ServiceCategory>
+            {
+                // SlaHours used for scheduling/workload calculations: Installation=4, Maintenance=2, Repair=3
+                new ServiceCategory { Name = "Installation", Description = "Setup of new hardware", BaseCharge = 500, SlaHours = 4 },
+                new ServiceCategory { Name = "Maintenance", Description = "Routine checkups", BaseCharge = 200, SlaHours = 2 },
+                new ServiceCategory { Name = "Repair", Description = "Fixing broken equipment", BaseCharge = 350, SlaHours = 3 }
+            };
+            context.ServiceCategories.AddRange(categories);
+            await context.SaveChangesAsync();
+        }
+    }
+}

@@ -1,0 +1,57 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.DTOs;
+
+namespace ServiceManagementApi.Services;
+
+// 1. The Interface
+public interface IAdminService
+{
+    Task<List<object>> GetAllUsersWithRolesAsync();
+    Task<IdentityResult> UpdateUserRoleAsync(string userId, string newRole);
+}
+
+// 2. The Implementation
+public class AdminService : IAdminService
+{
+    private readonly UserManager<IdentityUser> _userManager;
+
+    public AdminService(UserManager<IdentityUser> userManager)
+    {
+        _userManager = userManager;
+    }
+
+    public async Task<List<object>> GetAllUsersWithRolesAsync()
+    {
+        var users = await _userManager.Users.ToListAsync();
+        var userList = new List<object>();
+
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            userList.Add(new
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = roles.FirstOrDefault() ?? "Customer"
+            });
+        }
+        return userList;
+    }
+
+    public async Task<IdentityResult> UpdateUserRoleAsync(string userId, string newRole)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+
+        // Remove existing roles
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+        if (!removeResult.Succeeded) return removeResult;
+
+        // Add the new role
+        return await _userManager.AddToRoleAsync(user, newRole);
+    }
+}

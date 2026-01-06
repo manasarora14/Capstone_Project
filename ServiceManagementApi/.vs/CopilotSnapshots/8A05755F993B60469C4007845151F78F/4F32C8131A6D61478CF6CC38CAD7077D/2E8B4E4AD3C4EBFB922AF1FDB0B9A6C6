@@ -1,0 +1,117 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.Models;
+using ServiceManagementApi.DTOs;
+
+namespace ServiceManagementApi.Services;
+
+// 1. The Interface
+public interface IAdminService
+{
+    Task<List<object>> GetAllUsersWithRolesAsync();
+    Task<IdentityResult> UpdateUserRoleAsync(string userId, string newRole);
+
+    // Category management
+    Task<List<ServiceCategory>> GetCategoriesAsync();
+    Task<ServiceCategory?> GetCategoryByIdAsync(int id);
+    Task<ServiceCategory> CreateCategoryAsync(CreateCategoryDto dto);
+    Task<bool> UpdateCategoryAsync(UpdateCategoryDto dto);
+    Task<bool> DeleteCategoryAsync(int id);
+}
+
+// 2. The Implementation
+public class AdminService : IAdminService
+{
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly ApplicationDbContext _context;
+
+    public AdminService(UserManager<IdentityUser> userManager, ApplicationDbContext context)
+    {
+        _userManager = userManager;
+        _context = context;
+    }
+
+    public async Task<List<object>> GetAllUsersWithRolesAsync()
+    {
+        var users = await _userManager.Users.ToListAsync();
+        var userList = new List<object>();
+
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            userList.Add(new
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Role = roles.FirstOrDefault() ?? "Customer"
+            });
+        }
+        return userList;
+    }
+
+    public async Task<IdentityResult> UpdateUserRoleAsync(string userId, string newRole)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+
+        // Remove existing roles
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+        if (!removeResult.Succeeded) return removeResult;
+
+        // Add the new role
+        return await _userManager.AddToRoleAsync(user, newRole);
+    }
+
+    // Category methods
+    public async Task<List<ServiceCategory>> GetCategoriesAsync()
+    {
+        return await _context.ServiceCategories.OrderBy(c => c.Name).ToListAsync();
+    }
+
+    public async Task<ServiceCategory?> GetCategoryByIdAsync(int id)
+    {
+        return await _context.ServiceCategories.FindAsync(id);
+    }
+
+    public async Task<ServiceCategory> CreateCategoryAsync(CreateCategoryDto dto)
+    {
+        var category = new ServiceCategory
+        {
+            Name = dto.Name,
+            Description = dto.Description,
+            BaseCharge = dto.BaseCharge,
+            SlaHours = dto.SlaHours
+        };
+        _context.ServiceCategories.Add(category);
+        await _context.SaveChangesAsync();
+        return category;
+    }
+
+    public async Task<bool> UpdateCategoryAsync(UpdateCategoryDto dto)
+    {
+        var category = await _context.ServiceCategories.FindAsync(dto.Id);
+        if (category == null) return false;
+
+        category.Name = dto.Name;
+        category.Description = dto.Description;
+        category.BaseCharge = dto.BaseCharge;
+        category.SlaHours = dto.SlaHours;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteCategoryAsync(int id)
+    {
+        var category = await _context.ServiceCategories.FindAsync(id);
+        if (category == null) return false;
+
+        _context.ServiceCategories.Remove(category);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+}

@@ -1,0 +1,75 @@
+@if (stats()) {
+<div class="page-container">
+  <div class="page-header">
+    <h2><mat-icon>assessment</mat-icon> Analytics & Reports</h2>
+  </div>
+
+  <div class="stats-grid">
+    <mat-card class="stat-card">
+      <mat-card-subtitle>Avg. Resolution Time</mat-card-subtitle>
+      <mat-card-title>{{ stats()?.avgResolution | number:'1.1-1' }} Hours</mat-card-title>
+      <mat-icon class="card-icon">timer</mat-icon>
+    </mat-card>
+
+    @if (auth.userRole() === 'Admin' || auth.userRole() === 'Manager') {
+    <mat-card class="stat-card revenue">
+  <mat-card-subtitle>Revenue (Last Active Month)</mat-card-subtitle>
+  <mat-card-title>{{ latestRevenue() | currency:'INR' }}</mat-card-title>
+  <mat-icon class="card-icon">calendar_today</mat-icon>
+</mat-card>
+
+<mat-card class="stat-card revenue total-revenue">
+  <mat-card-subtitle>Total System Revenue (Lifetime)</mat-card-subtitle>
+  <mat-card-title>{{ stats()?.totalRevenue | currency:'INR' }}</mat-card-title>
+  <mat-icon class="card-icon">account_balance</mat-icon>
+</mat-card>
+    }
+  </div>
+
+  <div class="details-grid">
+    <mat-card class="detail-card">
+      <h3>Requests by Status</h3>
+      @for (item of stats()?.statusCounts; track item.status) {
+      <div class="report-row">
+        <span class="label">{{ item.status }}</span>
+        <mat-progress-bar mode="determinate" [value]="getPercentage(item.count, 'status')"></mat-progress-bar>
+        <span class="count">{{ item.count }}</span>
+      </div>
+      }
+    </mat-card>
+
+    <mat-card class="detail-card">
+      <h3>Technician Workload</h3>
+      @for (tech of stats()?.technicianLoad; track tech.name) {
+      <div class="report-row">
+        <span class="label">{{ tech.name }}</span>
+        <mat-progress-bar class="tech-bar" mode="determinate" [value]="getPercentage(tech.taskCount, 'tech')"></mat-progress-bar>
+        <span class="count">{{ tech.taskCount }}</span>
+      </div>
+      } @empty {
+      <p class="empty-msg">No active assignments found.</p>
+      }
+    </mat-card>
+
+    @if (auth.userRole() === 'Admin' || auth.userRole() === 'Manager') {
+    <mat-card class="detail-card">
+      <h3>Requests by Category</h3>
+      @for (cat of stats()?.categoryCounts; track cat.category) {
+      <div class="report-row">
+        <span class="label">{{ cat.category }}</span>
+        <mat-progress-bar class="category-bar" mode="determinate" [value]="getPercentage(cat.count, 'category')"></mat-progress-bar>
+        <span class="count">{{ cat.count }}</span>
+      </div>
+      } @empty {
+      <p class="empty-msg">No category distribution data available.</p>
+      }
+    </mat-card>
+    }
+  </div>
+</div>
+} @else {
+<div class="loading-container">
+  <div class="fallback-spinner" aria-hidden="true"></div>
+  <p>Generating system reports...</p>
+</div>
+}

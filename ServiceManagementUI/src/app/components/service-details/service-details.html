@@ -1,0 +1,205 @@
+<div class="page-container">
+  <div class="page-header">
+    <button mat-icon-button (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h2>
+      <mat-icon>description</mat-icon>
+      Service Request Details
+    </h2>
+  </div>
+
+  <mat-card *ngIf="loading()" class="loading-card">
+      <div class="loading-spinner">
+        <mat-icon>hourglass_empty</mat-icon>
+        <p>Loading service request details...</p>
+      </div>
+    </mat-card>
+
+  <mat-card *ngIf="error()" class="error-card">
+      <div class="error-content">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-button (click)="goBack()">Go Back</button>
+      </div>
+    </mat-card>
+
+  <ng-container *ngIf="!loading() && !error() && $any(request()) as req">
+    <div class="details-container">
+      <mat-card class="header-card">
+        <div class="header-content">
+          <div class="request-id">
+            <h1>Request #{{ req.id }}</h1>
+            <span class="status-badge" [ngClass]="getStatusClass(req)">
+              {{ getStatusDisplay(req) }}
+            </span>
+          </div>
+          <div class="priority-badge" [ngClass]="getPriorityClass(req.priority)">
+            <mat-icon>flag</mat-icon>
+            {{ getPriorityLabel(req.priority) }} Priority
+          </div>
+        </div>
+      </mat-card>
+
+    
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>info</mat-icon>
+            Service Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>Category:</strong>
+              <span>{{ req.category?.name || req.categoryName || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Issue Description:</strong>
+              <span>{{ req.issueDescription }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Scheduled Date:</strong>
+              <span>{{ formatDate(req.scheduledDate) }}</span>
+            </div>
+            <ng-container *ngIf="req.category">
+              <div class="info-item">
+                <strong>Base Charge:</strong>
+                <span>₹{{ req.category?.baseCharge }}</span>
+              </div>
+              <div class="info-item">
+                <strong>SLA:</strong>
+                <span>{{ req.category?.slaHours }} hours</span>
+              </div>
+            </ng-container>
+            <div class="info-item" *ngIf="isAssigned(req)">
+              <strong>Total Price:</strong>
+              <span class="price-highlight">₹{{ getTotalPrice(req) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      
+      <div class="two-column">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>person</mat-icon>
+              Customer Information
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+                  <div class="info-item">
+                    <strong>Customer:</strong>
+                    <span>{{ req.customerName || req.customerId }}</span>
+                  </div>
+            </mat-card-content>
+        </mat-card>
+
+        <ng-container *ngIf="req.technicianId">
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>engineering</mat-icon>
+                Technician Information
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="info-item">
+                  <strong>Technician:</strong>
+                  <span>{{ req.technicianName || req.technicianId }}</span>
+                </div>
+            </mat-card-content>
+          </mat-card>
+        </ng-container>
+      </div>
+
+      <div class="timeline">
+  @if (req.workStartedAt) {
+    <div class="timeline-item">
+      <mat-icon>play_circle_outline</mat-icon>
+      <div class="timeline-details">
+        <strong>Work Started:</strong>
+        <span>{{ req.workStartedAt | date:'mediumTime' }}</span>
+      </div>
+    </div>
+  }
+
+  @if (req.workEndedAt) {
+    <div class="timeline-item">
+      <mat-icon>stop_circle</mat-icon>
+      <div class="timeline-details">
+        <strong>Work Ended:</strong>
+        <span>{{ req.workEndedAt | date:'mediumTime' }}</span>
+      </div>
+    </div>
+  }
+
+  @if (req.duration) {
+    <div class="timeline-item duration-highlight">
+      <mat-icon>timer</mat-icon>
+      <div class="timeline-details">
+        <strong>Total Labor Time:</strong>
+        <span>{{ req.duration }}</span>
+      </div>
+    </div>
+  }
+</div>
+
+      
+      <mat-card *ngIf="req?.resolutionNotes" class="info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>notes</mat-icon>
+              Resolution Notes
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="resolution-notes">{{ req.resolutionNotes }}</p>
+          </mat-card-content>
+        </mat-card>
+
+     
+      <mat-card *ngIf="req.invoice" class="info-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>receipt_long</mat-icon>
+              Invoice
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-item">
+              <strong>Invoice ID:</strong>
+              <span>{{ req.invoice?.id || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Amount:</strong>
+              <span>₹{{ req.invoice?.amount || getTotalPrice(req) }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Status:</strong>
+              <span>{{ req.invoice?.status || 'Unknown' }}</span>
+            </div>
+            <div class="info-item" *ngIf="req.invoice?.downloadUrl">
+              <a [href]="req.invoice?.downloadUrl" target="_blank">Download Invoice</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      <!-- Actions -->
+      <mat-card *ngIf="isCustomer() && canCancel(req)" class="actions-card">
+          <mat-card-content>
+            <div class="actions">
+              <button mat-raised-button color="warn" (click)="cancelRequest()">
+                <mat-icon>cancel</mat-icon>
+                Cancel Request
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </ng-container>
+</div>
+

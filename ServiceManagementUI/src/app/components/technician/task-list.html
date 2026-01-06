@@ -1,0 +1,95 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2><mat-icon>engineering</mat-icon> My Active Work Orders</h2>
+    <p class="subtitle">Manage your assigned repairs and update completion status</p>
+  </div>
+
+  <ng-container *ngIf="tasks().length > 0; else emptyList">
+    <div class="table-container mat-elevation-z2">
+      <table mat-table [dataSource]="tasks()" class="full-width">
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef> ID </th>
+          <td mat-cell *matCellDef="let task"> #{{task.id}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="customer">
+          <th mat-header-cell *matHeaderCellDef> Customer </th>
+          <td mat-cell *matCellDef="let task">
+            <div class="customer-cell">
+              <span class="name">{{ $any(task).customerName || task.customerId || 'Contact Customer' }}</span>
+              <span class="priority-tag" [attr.data-priority]="task.priority">
+                {{ getPriorityName(task.priority) }}
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
+          <ng-container matColumnDef="notes">
+          <th mat-header-cell *matHeaderCellDef> Resolution Notes </th>
+          <td mat-cell *matCellDef="let task">
+            <div class="notes-cell">
+              <div *ngIf="task.status === 2">
+                <mat-form-field appearance="outline" class="full-width mini-notes">
+                  <mat-label>Resolution Notes</mat-label>
+                  <textarea matInput [(ngModel)]="task.tempNotes" rows="1"></textarea>
+                </mat-form-field>
+              </div>
+              <div *ngIf="task.status !== 2">
+                <p class="truncate">{{ task.tempNotes || task.resolutionNotes || task.resolutionNote || task.notes || '—' }}</p>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+          <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Status </th>
+          <td mat-cell *matCellDef="let task">
+            <div class="status-cell">
+              <span class="status-text">{{ formatStatus(task.status) }}</span>
+              <span *ngIf="task.status === 2" class="pulse-dot"></span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Actions </th>
+          <td mat-cell *matCellDef="let task">
+            <div class="action-buttons">
+              <button mat-button color="primary" [routerLink]="['/service-details', task.id]">View Details</button>
+
+              <ng-container *ngIf="task.status === RequestStatus.Assigned">
+                <ng-container *ngIf="task.assignmentResponse === 'accepted'">
+                  <button mat-flat-button color="primary" size="small" (click)="startWork(task.id)">START</button>
+                </ng-container>
+                <ng-container *ngIf="task.assignmentResponse === 'rejected'">
+                  <mat-icon color="warn">block</mat-icon>
+                </ng-container>
+                <ng-container *ngIf="!task.assignmentResponse">
+                  <button mat-button color="primary" (click)="acceptTask(task.id)">Accept</button>
+                  <button mat-button color="warn" (click)="rejectTask(task.id)">Reject</button>
+                </ng-container>
+              </ng-container>
+
+              <button *ngIf="task.status === 2" mat-flat-button class="complete-btn" [disabled]="!task.tempNotes" (click)="finishWork(task.id)">FINISH</button>
+
+              <mat-icon *ngIf="task.status === 3" class="done-icon">verified</mat-icon>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="['id', 'customer', 'notes', 'status', 'actions']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['id', 'customer', 'notes', 'status', 'actions'];" [class.active-row]="row.status === 2"></tr>
+      </table>
+    </div>
+  </ng-container>
+
+  <ng-template #emptyList>
+    <div class="empty-state">
+      <mat-icon>auto_awesome</mat-icon>
+      <h3>You're all caught up!</h3>
+      <p>No tasks are currently assigned to you.</p>
+      <button mat-stroked-button (click)="loadTasks()">Check for New Work</button>
+    </div>
+  </ng-template>
+</div>

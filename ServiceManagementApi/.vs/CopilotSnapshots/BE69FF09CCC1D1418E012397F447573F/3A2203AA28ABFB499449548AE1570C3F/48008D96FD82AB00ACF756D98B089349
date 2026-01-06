@@ -1,0 +1,20 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ServiceManagementApi.Models;
+
+public class Invoice
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int ServiceRequestId { get; set; }
+    public ServiceRequest? ServiceRequest { get; set; }
+
+    [Required]
+    public decimal Amount { get; set; }
+
+    public DateTime GeneratedDate { get; set; } = DateTime.Now;
+
+    // Status: Paid or Pending
+    public string Status { get; set; } = "Pending";
+}

@@ -1,0 +1,495 @@
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.DTOs;
+using ServiceManagementApi.Models;
+using ServiceManagementApi.Services;
+using Xunit;
+
+namespace ServiceManagementApi.Tests.Services;
+
+public class ServiceRequestServiceTests
+{
+    private ApplicationDbContext CreateContext(string dbName)
+    {
+        var opts = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+        return new ApplicationDbContext(opts);
+    }
+
+    private BillingService CreateBilling(ApplicationDbContext ctx) => new BillingService(ctx);
+
+    [Fact]
+    public async Task CreateRequestAsync_AddsRequestWithRequestedStatus()
+    {
+        var ctx = CreateContext(nameof(CreateRequestAsync_AddsRequestWithRequestedStatus));
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var dto = new CreateRequestDto
+        {
+            IssueDescription = "AC issue",
+            CategoryId = 1,
+            Priority = Priority.Medium,
+            ScheduledDate = DateTime.UtcNow.Date
+        };
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, Name = "Install", BaseCharge = 100, SlaHours = 4 });
+        await ctx.SaveChangesAsync();
+
+        await svc.CreateRequestAsync(dto, "cust1");
+
+        var req = await ctx.ServiceRequests.FirstAsync();
+        Assert.Equal(RequestStatus.Requested, req.Status);
+        Assert.Equal("cust1", req.CustomerId);
+    }
+
+    [Fact]
+    public async Task AssignTechnicianAsync_ReturnsFalse_WhenConflict()
+    {
+        var ctx = CreateContext(nameof(AssignTechnicianAsync_ReturnsFalse_WhenConflict));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, SlaHours = 2, BaseCharge = 50, Name = "Cat" });
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            CategoryId = 1,
+            Category = await ctx.ServiceCategories.FindAsync(1),
+            TechnicianId = "tech1",
+            Status = RequestStatus.Assigned,
+            ScheduledDate = DateTime.UtcNow
+        });
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 2,
+            CategoryId = 1,
+            Category = await ctx.ServiceCategories.FindAsync(1),
+            Status = RequestStatus.Requested,
+            ScheduledDate = DateTime.UtcNow
+        });
+        await ctx.SaveChangesAsync();
+
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.AssignTechnicianAsync(new AssignTechnicianDto { RequestId = 2, TechnicianId = "tech1" });
+
+        Assert.False(ok); // conflict detected
+    }
+
+    [Fact]
+    public async Task StartWorkAsync_SetsInProgress()
+    {
+        var ctx = CreateContext(nameof(StartWorkAsync_SetsInProgress));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.Assigned });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.StartWorkAsync(1, "t1", DateTime.UtcNow);
+
+        Assert.True(ok);
+        var req = await ctx.ServiceRequests.FindAsync(1);
+        Assert.Equal(RequestStatus.InProgress, req!.Status);
+        Assert.NotNull(req.WorkStartedAt);
+    }
+
+    [Fact]
+    public async Task FinishWorkAsync_CompletesAndCreatesInvoice()
+    {
+        var ctx = CreateContext(nameof(FinishWorkAsync_CompletesAndCreatesInvoice));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, BaseCharge = 100, SlaHours = 4, Name = "Cat" });
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.InProgress, CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1) });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.FinishWorkAsync(1, "t1", DateTime.UtcNow);
+
+        Assert.True(ok);
+        var req = await ctx.ServiceRequests.FindAsync(1);
+        Assert.Equal(RequestStatus.Completed, req!.Status);
+        Assert.Equal(1, ctx.Invoices.Count());
+    }
+
+    [Fact]
+    public async Task GetDashboardStatsAsync_ReturnsAggregates()
+    {
+        var ctx = CreateContext(nameof(GetDashboardStatsAsync_ReturnsAggregates));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, BaseCharge = 100, SlaHours = 4, Name = "Cat" });
+        ctx.ServiceRequests.AddRange(
+            new ServiceRequest { Id = 1, Status = RequestStatus.Requested, CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1) },
+            new ServiceRequest { Id = 2, Status = RequestStatus.Assigned, TechnicianId = "t1", CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1) }
+        );
+        ctx.Invoices.Add(new Invoice { Id = 1, ServiceRequestId = 2, Amount = 50, Status = "Paid", PaidAt = DateTime.UtcNow });
+        await ctx.SaveChangesAsync();
+
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var stats = await svc.GetDashboardStatsAsync() as dynamic;
+
+        Assert.Equal(2, (int)stats.totalRequests);
+        Assert.True(((IEnumerable<object>)stats.statusSummary).Any());
+        Assert.True((decimal)stats.totalRevenue > 0);
+    }
+
+    [Fact]
+    public async Task AssignTechnicianAsync_ReturnsTrue_WhenAvailable()
+    {
+        var ctx = CreateContext(nameof(AssignTechnicianAsync_ReturnsTrue_WhenAvailable));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, SlaHours = 2, BaseCharge = 50, Name = "Cat" });
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            CategoryId = 1,
+            Category = await ctx.ServiceCategories.FindAsync(1),
+            Status = RequestStatus.Requested,
+            ScheduledDate = DateTime.UtcNow
+        });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.AssignTechnicianAsync(new AssignTechnicianDto { RequestId = 1, TechnicianId = "tech1" });
+
+        Assert.True(ok);
+        Assert.Equal("tech1", (await ctx.ServiceRequests.FindAsync(1))!.TechnicianId);
+    }
+
+    [Fact]
+    public async Task AssignTechnicianAsync_AllowsDifferentTechWhenConflictExists()
+    {
+        var ctx = CreateContext(nameof(AssignTechnicianAsync_AllowsDifferentTechWhenConflictExists));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, SlaHours = 2, BaseCharge = 50, Name = "Cat" });
+        var cat = await ctx.ServiceCategories.FindAsync(1);
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            Category = cat!,
+            CategoryId = 1,
+            TechnicianId = "busyTech",
+            Status = RequestStatus.Assigned,
+            ScheduledDate = DateTime.UtcNow
+        });
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 2,
+            Category = cat!,
+            CategoryId = 1,
+            Status = RequestStatus.Requested,
+            ScheduledDate = DateTime.UtcNow
+        });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.AssignTechnicianAsync(new AssignTechnicianDto { RequestId = 2, TechnicianId = "otherTech" });
+
+        Assert.True(ok);
+        Assert.Equal("otherTech", (await ctx.ServiceRequests.FindAsync(2))!.TechnicianId);
+    }
+
+    [Fact]
+    public async Task RescheduleRequestAsync_UnassignsBusyTech()
+    {
+        var ctx = CreateContext(nameof(RescheduleRequestAsync_UnassignsBusyTech));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, SlaHours = 2, BaseCharge = 50, Name = "Cat" });
+        var cat = await ctx.ServiceCategories.FindAsync(1);
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            Category = cat!,
+            CategoryId = 1,
+            TechnicianId = "tech1",
+            Status = RequestStatus.Assigned,
+            ScheduledDate = DateTime.UtcNow
+        });
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 2,
+            Category = cat!,
+            CategoryId = 1,
+            TechnicianId = "tech1",
+            Status = RequestStatus.Assigned,
+            ScheduledDate = DateTime.UtcNow.AddHours(1)
+        });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.RescheduleRequestAsync(2, DateTime.UtcNow, "cust", "Manager");
+
+        Assert.True(ok);
+        var req = await ctx.ServiceRequests.FindAsync(2);
+        Assert.Null(req!.TechnicianId); // unassigned due to conflict
+        Assert.Equal(RequestStatus.Requested, req.Status);
+    }
+
+    [Fact]
+    public async Task RescheduleRequestAsync_AllowsWhenNoConflict()
+    {
+        var ctx = CreateContext(nameof(RescheduleRequestAsync_AllowsWhenNoConflict));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, SlaHours = 1, BaseCharge = 50, Name = "Cat" });
+        var cat = await ctx.ServiceCategories.FindAsync(1);
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            Category = cat!,
+            CategoryId = 1,
+            TechnicianId = "tech1",
+            Status = RequestStatus.Assigned,
+            ScheduledDate = DateTime.UtcNow
+        });
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 2,
+            Category = cat!,
+            CategoryId = 1,
+            TechnicianId = "tech1",
+            Status = RequestStatus.Assigned,
+            ScheduledDate = DateTime.UtcNow.AddHours(5)
+        });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.RescheduleRequestAsync(2, DateTime.UtcNow.AddHours(8), "cust", "Manager");
+
+        Assert.True(ok);
+        Assert.Equal("tech1", (await ctx.ServiceRequests.FindAsync(2))!.TechnicianId);
+    }
+
+    [Fact]
+    public async Task CancelRequestAsync_Fails_WhenInProgress()
+    {
+        var ctx = CreateContext(nameof(CancelRequestAsync_Fails_WhenInProgress));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust", Status = RequestStatus.InProgress });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.CancelRequestAsync(1, "cust");
+
+        Assert.False(ok);
+    }
+
+    [Fact]
+    public async Task CancelRequestAsync_Succeeds_WhenRequested()
+    {
+        var ctx = CreateContext(nameof(CancelRequestAsync_Succeeds_WhenRequested));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust", Status = RequestStatus.Requested });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.CancelRequestAsync(1, "cust");
+
+        Assert.True(ok);
+        Assert.Equal(RequestStatus.Closed, (await ctx.ServiceRequests.FindAsync(1))!.Status);
+    }
+
+    [Fact]
+    public async Task UpdateStatusWithBillingAsync_CompletesAndPrices()
+    {
+        var ctx = CreateContext(nameof(UpdateStatusWithBillingAsync_CompletesAndPrices));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, BaseCharge = 100, SlaHours = 4, Name = "Cat" });
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1), Status = RequestStatus.InProgress, Priority = Priority.High });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.UpdateStatusWithBillingAsync(new UpdateStatusDto { RequestId = 1, Status = RequestStatus.Completed, ResolutionNotes = "done" });
+
+        Assert.True(ok);
+        var req = await ctx.ServiceRequests.FindAsync(1);
+        Assert.Equal(RequestStatus.Completed, req!.Status);
+        Assert.True(req.TotalPrice > 0);
+        Assert.Equal(1, ctx.Invoices.Count());
+    }
+
+    [Fact]
+    public async Task UpdateStatusAsync_CompletesSetsCompletedAt()
+    {
+        var ctx = CreateContext(nameof(UpdateStatusAsync_CompletesSetsCompletedAt));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, BaseCharge = 100, SlaHours = 4, Name = "Cat" });
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CategoryId = 1, Category = await ctx.ServiceCategories.FindAsync(1), Status = RequestStatus.InProgress });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.UpdateStatusAsync(1, RequestStatus.Completed, "done");
+
+        Assert.True(ok);
+        var req = await ctx.ServiceRequests.FindAsync(1);
+        Assert.NotNull(req!.CompletedAt);
+    }
+
+    [Fact]
+    public async Task RespondToAssignmentAsync_AcceptSetsPlannedStart()
+    {
+        var ctx = CreateContext(nameof(RespondToAssignmentAsync_AcceptSetsPlannedStart));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "tech1", Status = RequestStatus.Assigned });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+        var planned = DateTime.UtcNow.AddHours(2);
+
+        var ok = await svc.RespondToAssignmentAsync(1, "tech1", true, planned);
+
+        Assert.True(ok);
+        Assert.Equal(planned.ToUniversalTime(), (await ctx.ServiceRequests.FindAsync(1))!.PlannedStartUtc);
+    }
+
+    [Fact]
+    public async Task RespondToAssignmentAsync_RejectClearsTechnician()
+    {
+        var ctx = CreateContext(nameof(RespondToAssignmentAsync_RejectClearsTechnician));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "tech1", Status = RequestStatus.Assigned });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.RespondToAssignmentAsync(1, "tech1", false, null);
+
+        Assert.True(ok);
+        var req = await ctx.ServiceRequests.FindAsync(1);
+        Assert.Null(req!.TechnicianId);
+        Assert.Equal(RequestStatus.Requested, req.Status);
+    }
+
+    [Fact]
+    public async Task GetServiceRequestByIdAsync_AllowsManager()
+    {
+        var ctx = CreateContext(nameof(GetServiceRequestByIdAsync_AllowsManager));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust1" });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var req = await svc.GetServiceRequestByIdAsync(1, "mgr", "Manager");
+
+        Assert.NotNull(req);
+    }
+
+    [Fact]
+    public async Task GetServiceRequestByIdAsync_DeniesOtherCustomer()
+    {
+        var ctx = CreateContext(nameof(GetServiceRequestByIdAsync_DeniesOtherCustomer));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, CustomerId = "cust1" });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var req = await svc.GetServiceRequestByIdAsync(1, "cust2", "Customer");
+
+        Assert.Null(req);
+    }
+
+    [Fact]
+    public async Task GetCustomerRequestsAsync_FiltersCorrectly()
+    {
+        var ctx = CreateContext(nameof(GetCustomerRequestsAsync_FiltersCorrectly));
+        ctx.ServiceRequests.AddRange(
+            new ServiceRequest { Id = 1, CustomerId = "c1" },
+            new ServiceRequest { Id = 2, CustomerId = "c2" }
+        );
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var mine = await svc.GetCustomerRequestsAsync("c1");
+
+        Assert.Single(mine);
+        Assert.Equal(1, mine.First().Id);
+    }
+
+    [Fact]
+    public async Task GetTechnicianTasksAsync_FiltersByTechnician()
+    {
+        var ctx = CreateContext(nameof(GetTechnicianTasksAsync_FiltersByTechnician));
+        ctx.ServiceRequests.AddRange(
+            new ServiceRequest { Id = 1, TechnicianId = "t1" },
+            new ServiceRequest { Id = 2, TechnicianId = "t2" }
+        );
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var tasks = await svc.GetTechnicianTasksAsync("t1");
+
+        Assert.Single(tasks);
+        Assert.Equal(1, tasks.First().Id);
+    }
+
+    [Fact]
+    public async Task StartWorkAsync_FailsForDifferentTechnician()
+    {
+        var ctx = CreateContext(nameof(StartWorkAsync_FailsForDifferentTechnician));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.Assigned });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.StartWorkAsync(1, "t2", DateTime.UtcNow);
+
+        Assert.False(ok);
+    }
+
+    [Fact]
+    public async Task FinishWorkAsync_FailsForDifferentTechnician()
+    {
+        var ctx = CreateContext(nameof(FinishWorkAsync_FailsForDifferentTechnician));
+        ctx.ServiceRequests.Add(new ServiceRequest { Id = 1, TechnicianId = "t1", Status = RequestStatus.InProgress, Category = new ServiceCategory { BaseCharge = 50, SlaHours = 2, Name = "Cat" } });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var ok = await svc.FinishWorkAsync(1, "t2", DateTime.UtcNow);
+
+        Assert.False(ok);
+    }
+
+    [Fact]
+    public async Task GetDashboardStatsAsync_ComputesSlaCompliancePositiveDurations()
+    {
+        var ctx = CreateContext(nameof(GetDashboardStatsAsync_ComputesSlaCompliancePositiveDurations));
+        ctx.ServiceCategories.Add(new ServiceCategory { Id = 1, SlaHours = 4, BaseCharge = 100, Name = "Cat" });
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            Status = RequestStatus.Closed,
+            CategoryId = 1,
+            Category = await ctx.ServiceCategories.FindAsync(1),
+            WorkStartedAt = DateTime.UtcNow.AddHours(-2),
+            WorkEndedAt = DateTime.UtcNow,
+            CompletedAt = DateTime.UtcNow
+        });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var stats = await svc.GetDashboardStatsAsync() as dynamic;
+
+        Assert.NotNull(stats);
+        Assert.True(((IEnumerable<object>)stats.statusSummary).Any());
+    }
+
+    [Fact]
+    public async Task GetDashboardStatsAsync_RevenueFallbackToRequests()
+    {
+        var ctx = CreateContext(nameof(GetDashboardStatsAsync_RevenueFallbackToRequests));
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            Status = RequestStatus.Closed,
+            CompletedAt = DateTime.UtcNow,
+            TotalPrice = 75,
+            Category = new ServiceCategory { BaseCharge = 50, SlaHours = 2, Name = "Cat" }
+        });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var stats = await svc.GetDashboardStatsAsync() as dynamic;
+
+        Assert.True((decimal)stats.totalRevenue >= 75);
+    }
+
+    [Fact]
+    public async Task GetDashboardStatsAsync_WorkloadCountsActiveTasks()
+    {
+        var ctx = CreateContext(nameof(GetDashboardStatsAsync_WorkloadCountsActiveTasks));
+        ctx.ServiceRequests.Add(new ServiceRequest
+        {
+            Id = 1,
+            TechnicianId = "t1",
+            Status = RequestStatus.Assigned,
+            Category = new ServiceCategory { BaseCharge = 50, SlaHours = 2, Name = "Cat" }
+        });
+        await ctx.SaveChangesAsync();
+        var svc = new ServiceRequestService(ctx, CreateBilling(ctx));
+
+        var stats = await svc.GetDashboardStatsAsync() as dynamic;
+        var workload = (IEnumerable<dynamic>)stats.workload;
+
+        Assert.Single(workload);
+    }
+}
+

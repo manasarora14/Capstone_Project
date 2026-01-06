@@ -1,0 +1,46 @@
+﻿using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.DTOs
+{
+    public class CreateRequestDto
+    {
+        public string IssueDescription { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+        public Priority Priority { get; set; }
+        public DateTime ScheduledDate { get; set; }
+        // New: preferred time of day the customer wants the technician
+        // Use TimeSpan so frontend can send an HH:mm or HH:mm:ss value
+        public TimeSpan? ScheduledTime { get; set; }
+    }
+
+    public class UpdateStatusDto
+    {
+        public int RequestId { get; set; }
+        public RequestStatus Status { get; set; }
+        public string? ResolutionNotes { get; set; } 
+    }
+
+    public class AssignTechnicianDto
+    {
+        public int RequestId { get; set; }
+        public string TechnicianId { get; set; } = string.Empty;
+    }
+
+    // Admin: Manage service categories
+    public class CreateCategoryDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal BaseCharge { get; set; }
+        public int SlaHours { get; set; }
+    }
+
+    public class UpdateCategoryDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal BaseCharge { get; set; }
+        public int SlaHours { get; set; }
+    }
+}

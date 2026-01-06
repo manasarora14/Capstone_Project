@@ -1,0 +1,364 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.DTOs;
+using ServiceManagementApi.Models;
+using ServiceManagementApi.Services;
+using System.Security.Claims;
+using System.Text.Json;
+
+[Route("api/[controller]")]
+[ApiController]
+[Authorize]
+public class ServiceRequestController : ControllerBase
+{
+    private readonly IServiceRequestService _service;
+    private readonly IAvailabilityService _availabilityService;
+
+    public ServiceRequestController(IServiceRequestService service, IAvailabilityService availabilityService)
+    {
+        _service = service;
+        _availabilityService = availabilityService;
+    }
+
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetCategories() => Ok(await _service.GetCategoriesAsync());
+
+    [HttpPost("create")]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> Create(CreateRequestDto dto)
+    {
+        await _service.CreateRequestAsync(dto, User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        return Ok(new { message = "Success" });
+    }
+
+    [HttpPut("update-status")]
+    public async Task<IActionResult> UpdateStatus(UpdateStatusDto dto)
+    {
+        var success = await _service.UpdateStatusWithBillingAsync(dto);
+        return success ? Ok() : NotFound();
+    }
+
+    [HttpGet("monitor-all")]
+    [Authorize(Roles = "Manager,Admin")]
+    public async Task<IActionResult> Monitor() => Ok(await _service.GetAllForMonitorAsync());
+
+    [HttpPut("assign")]
+    [Authorize(Roles = "Manager,Admin")]
+    public async Task<IActionResult> Assign(AssignTechnicianDto dto)
+    {
+        var success = await _service.AssignTechnicianAsync(dto);
+        if (!success)
+        {
+            return BadRequest(new { message = "Technician is not available for the scheduled time slot or request not found." });
+        }
+        return Ok(new { message = "Technician assigned successfully" });
+    }
+
+    [HttpGet("available-technicians/{requestId}")]
+    [Authorize(Roles = "Manager,Admin")]
+    public async Task<IActionResult> GetAvailableTechniciansForRequest(int requestId)
+    {
+        var request = await _service.GetServiceRequestByIdAsync(requestId, "", "Admin");
+        if (request == null) return NotFound();
+
+        var scheduledStart = request.PlannedStartUtc ?? request.ScheduledDate;
+        var duration = request.Category?.SlaHours ?? 0;
+
+        if (duration <= 0)
+        {
+            return BadRequest(new { message = "Request does not have a valid category SLA duration" });
+        }
+
+        var availableTechs = await _availabilityService.GetAvailableTechniciansAsync(scheduledStart, duration);
+        
+        return Ok(availableTechs);
+    }
+
+
+    [Authorize(Roles = "Technician")]
+    [HttpGet("my-tasks")]
+    public async Task<IActionResult> GetMyTasks()
+    {
+        // Get the ID of the logged-in technician from the JWT token
+        var technicianId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(technicianId)) return Unauthorized();
+
+        // Call the service instead of the context directly
+        var tasks = await _service.GetTechnicianTasksAsync(technicianId);
+
+        // Map to response DTOs and include customer name
+        var dtoList = tasks.Select(r => new ServiceRequestResponseDto
+        {
+            Id = r.Id,
+            Status = r.Status,
+            StatusName = r.Status.ToString(),
+            CustomerId = r.CustomerId ?? string.Empty,
+            CustomerName = r.Customer?.UserName,
+            TechnicianId = r.TechnicianId,
+            TechnicianName = r.Technician?.UserName,
+            IssueDescription = r.IssueDescription,
+            ScheduledDate = r.ScheduledDate,
+            TotalPrice = r.TotalPrice,
+            CompletedAt = r.CompletedAt,
+            CategoryId = r.CategoryId,
+            CategoryName = r.Category?.Name ?? string.Empty
+        }).ToList();
+
+        return Ok(dtoList);
+    }
+
+    [Authorize(Roles = "Customer")]
+    [HttpGet("my-requests")]
+    public async Task<IActionResult> GetMyRequests()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var requests = await _service.GetCustomerRequestsAsync(userId);
+
+        var dtoList = requests.Select(r => new ServiceRequestResponseDto
+        {
+            Id = r.Id,
+            Status = r.Status,
+            StatusName = r.Status.ToString(),
+            CustomerId = r.CustomerId ?? string.Empty,
+            CustomerName = r.Customer?.UserName,
+            TechnicianId = r.TechnicianId,
+            TechnicianName = r.Technician?.UserName,
+            IssueDescription = r.IssueDescription,
+            ScheduledDate = r.ScheduledDate,
+            TotalPrice = r.TotalPrice,
+            CompletedAt = r.CompletedAt,
+            CategoryId = r.CategoryId,
+            CategoryName = r.Category?.Name ?? string.Empty
+        }).ToList();
+
+        return Ok(dtoList);
+    }
+
+    [HttpGet("dashboard-stats")]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<IActionResult> GetStats()
+    {
+        var result = await _service.GetDashboardStatsAsync();
+        return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetServiceRequestById(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var request = await _service.GetServiceRequestByIdAsync(id, userId, userRole);
+        
+        if (request == null) return NotFound();
+
+        var dto = new ServiceRequestResponseDto
+        {
+            Id = request.Id,
+            Status = request.Status,
+            StatusName = request.Status.ToString(),
+            CustomerId = request.CustomerId ?? string.Empty,
+            CustomerName = request.Customer?.UserName,
+            TechnicianId = request.TechnicianId,
+            TechnicianName = request.Technician?.UserName,
+            IssueDescription = request.IssueDescription,
+            ScheduledDate = request.ScheduledDate,
+            TotalPrice = request.TotalPrice,
+            CompletedAt = request.CompletedAt,
+            CategoryId = request.CategoryId,
+            CategoryName = request.Category?.Name ?? string.Empty
+        };
+
+        return Ok(dto);
+    }
+
+    // Allow technician to accept/reject an assignment (supports planned start)
+    [Authorize(Roles = "Technician")]
+    [HttpPost("{id}/respond")]
+    public async Task<IActionResult> Respond(int id, [FromBody] RespondAssignmentDto? dto)
+    {
+        var techId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get current Tech ID from JWT
+
+        bool accept;
+        DateTime? planned = null;
+
+        if (dto == null)
+        {
+            return BadRequest("Invalid payload");
+        }
+
+        accept = dto.Accept;
+        planned = dto.PlannedStartUtc;
+
+        var result = await _service.RespondToAssignmentAsync(id, techId, accept, planned);
+
+        if (!result) return BadRequest("Could not process response.");
+        return Ok(new { message = accept ? "Task Accepted" : "Task Rejected" });
+    }
+
+    // Customers (and Managers/Admins via role) can reschedule. Service enforces ownership/permissions.
+    [HttpPut("reschedule")]
+    [Authorize]
+    [Consumes("application/json", "text/plain")]
+    public async Task<IActionResult> Reschedule([FromBody] RescheduleDto? dto)
+    {
+        // If model binding failed (null) try to read raw body and deserialize manually
+        if (dto == null)
+        {
+            try
+            {
+                Request.Body.Position = 0;
+            }
+            catch { /* ignore if not seekable */ }
+
+            using var reader = new StreamReader(Request.Body);
+            var raw = await reader.ReadToEndAsync();
+            if (!string.IsNullOrWhiteSpace(raw))
+            {
+                try
+                {
+                    // Attempt JSON deserialize
+                    dto = JsonSerializer.Deserialize<RescheduleDto>(raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch
+                {
+                    // Fallback: try parse simple payload like '{"id":6, "newDate":"2026-01-01T10:00:00Z"}' was already attempted
+                    dto = null;
+                }
+            }
+
+            if (dto == null)
+                return BadRequest(new { message = "Invalid payload or Content-Type. Expected JSON body like {\"id\":123, \"newDate\":\"2026-01-01T10:00:00Z\"}" });
+        }
+
+        if (dto.Id <= 0)
+            return BadRequest(new { message = "Invalid request id" });
+
+        if (dto.NewDate == default)
+            return BadRequest(new { message = "Invalid newDate" });
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+
+        // Confirm request exists and caller can access it
+        var existing = await _service.GetServiceRequestByIdAsync(dto.Id, userId, userRole);
+        if (existing == null)
+            return NotFound(new { message = "Request not found or you are not authorized to access it." });
+
+        try
+        {
+            var success = await _service.RescheduleRequestAsync(dto.Id, dto.NewDate, userId, userRole);
+            if (!success)
+                return Conflict(new { message = "Could not reschedule. Technician may be unavailable or you are not authorized to perform this action." });
+
+            return Ok(new { message = "Appointment rescheduled successfully." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while trying to reschedule.", detail = ex.Message });
+        }
+    }
+
+    // New: accept separate date and time fields from the client
+    [HttpPut("reschedule-by-parts")]
+    [Authorize]
+    public async Task<IActionResult> RescheduleByParts([FromBody] RescheduleByPartsDto? dto)
+    {
+        if (dto == null) return BadRequest(new { message = "Invalid payload" });
+        if (dto.Id <= 0) return BadRequest(new { message = "Invalid request id" });
+        if (string.IsNullOrWhiteSpace(dto.Date) && string.IsNullOrWhiteSpace(dto.Time))
+            return BadRequest(new { message = "Provide at least Date or Time" });
+
+        // Parse date and time safely
+        DateTime localDateTime;
+        // Normalize date string
+        var datePart = dto.Date?.Trim();
+        var timePart = dto.Time?.Trim() ?? "00:00";
+
+        // Try multiple date formats
+        var dateFormats = new[] { "M/d/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "yyyy/M/d" };
+        var timeFormats = new[] { "H:mm", "HH:mm", "H:mm:ss", "HH:mm:ss" };
+
+        DateTime parsedDate;
+        if (!string.IsNullOrWhiteSpace(datePart))
+        {
+            if (!DateTime.TryParseExact(datePart, dateFormats, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out parsedDate))
+            {
+                // Try general parse as fallback
+                if (!DateTime.TryParse(datePart, out parsedDate))
+                    return BadRequest(new { message = "Invalid date format" });
+            }
+        }
+        else
+        {
+            // If no date provided, use today's date
+            parsedDate = DateTime.Today;
+        }
+
+        TimeSpan parsedTime;
+        if (!TimeSpan.TryParseExact(timePart, timeFormats, System.Globalization.CultureInfo.InvariantCulture, out parsedTime))
+        {
+            // Try general parse fallback
+            if (!TimeSpan.TryParse(timePart, out parsedTime))
+                return BadRequest(new { message = "Invalid time format" });
+        }
+
+        localDateTime = parsedDate.Date + parsedTime;
+
+        // Convert local to UTC - assume client sent local time; if client already sends UTC, they should use the /reschedule endpoint
+        var newDateUtc = DateTime.SpecifyKind(localDateTime, DateTimeKind.Local).ToUniversalTime();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+
+        var existing = await _service.GetServiceRequestByIdAsync(dto.Id, userId, userRole);
+        if (existing == null) return NotFound(new { message = "Request not found or you are not authorized to access it." });
+
+        var success = await _service.RescheduleRequestAsync(dto.Id, newDateUtc, userId, userRole);
+        if (!success) return Conflict(new { message = "Could not reschedule. Technician may be unavailable or you are not authorized to perform this action." });
+
+        return Ok(new { message = "Appointment rescheduled successfully." });
+    }
+
+    [HttpDelete("{id}/cancel")]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> CancelRequest(int id)
+    {
+        // Get the User ID from the JWT Token
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var result = await _service.CancelRequestAsync(id, userId);
+
+        if (!result)
+            return BadRequest("Unable to cancel. Request not found or technician already started work.");
+
+        return Ok(new { message = "Service request cancelled successfully." });
+    }
+
+    // Technician marks start of work
+    [Authorize(Roles = "Technician")]
+    [HttpPost("{id}/start")]
+    public async Task<IActionResult> StartWork(int id)
+    {
+        var techId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var now = DateTime.UtcNow;
+        var ok = await _service.StartWorkAsync(id, techId, now);
+        return ok ? Ok(new { message = "Work started", startedAt = now }) : BadRequest("Unable to start work.");
+    }
+
+    // Technician finishes work
+    [Authorize(Roles = "Technician")]
+    [HttpPost("{id}/finish")]
+    public async Task<IActionResult> FinishWork(int id)
+    {
+        var techId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var now = DateTime.UtcNow;
+        var ok = await _service.FinishWorkAsync(id, techId, now);
+        return ok ? Ok(new { message = "Work finished", finishedAt = now }) : BadRequest("Unable to finish work.");
+    }
+
+}

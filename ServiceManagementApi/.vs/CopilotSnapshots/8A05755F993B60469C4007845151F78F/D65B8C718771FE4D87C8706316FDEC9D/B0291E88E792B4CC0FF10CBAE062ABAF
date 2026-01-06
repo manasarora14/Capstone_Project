@@ -1,0 +1,38 @@
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ServiceManagementApi.Models;
+
+public enum RequestStatus { Requested, Assigned, InProgress, Completed, Closed }
+public enum Priority { Low, Medium, High }
+
+public class ServiceRequest
+{
+    public int Id { get; set; }
+    public string IssueDescription { get; set; }
+    public RequestStatus Status { get; set; } = RequestStatus.Requested;
+    public Priority Priority { get; set; }
+    public DateTime ScheduledDate { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // NEW FIELD: Tracking completion time for "Resolution Time" reports
+    public DateTime? CompletedAt { get; set; }
+
+    // NEW FIELD: Captures final price for "Revenue" reports
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TotalPrice { get; set; }
+
+    // Foreign Keys
+    public int CategoryId { get; set; }
+    public ServiceCategory Category { get; set; }
+
+    public string CustomerId { get; set; }
+    [ForeignKey("CustomerId")]
+    public IdentityUser Customer { get; set; }
+
+    public string? TechnicianId { get; set; }
+    [ForeignKey("TechnicianId")]
+    public IdentityUser? Technician { get; set; }
+
+    public string? ResolutionNotes { get; set; }
+}

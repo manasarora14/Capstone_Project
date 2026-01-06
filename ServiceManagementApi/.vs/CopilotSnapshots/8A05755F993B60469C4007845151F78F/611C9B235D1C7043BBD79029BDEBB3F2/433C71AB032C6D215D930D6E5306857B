@@ -1,0 +1,138 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.DTOs;
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.Services;
+
+public interface ITechnicianService
+{
+    Task<TechnicianAvailabilityResponseDto> AddAvailabilityAsync(AvailabilityDto dto);
+    Task<bool> RemoveAvailabilityAsync(int id, string technicianId);
+    Task<List<TechnicianAvailabilityResponseDto>> GetAvailabilityAsync(string technicianId);
+
+    // Scheduling
+    Task<bool> ScheduleVisitAsync(ScheduleVisitDto dto);
+
+    // Workload
+    Task<TechnicianWorkloadDto> GetWorkloadAsync(string technicianId);
+}
+
+public class TechnicianService : ITechnicianService
+{
+    private readonly ApplicationDbContext _context;
+
+    public TechnicianService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<TechnicianAvailabilityResponseDto> AddAvailabilityAsync(AvailabilityDto dto)
+    {
+        if (dto.EndUtc <= dto.StartUtc) throw new ArgumentException("End must be after start");
+
+        var avail = new TechnicianAvailability
+        {
+            TechnicianId = dto.TechnicianId,
+            StartUtc = dto.StartUtc,
+            EndUtc = dto.EndUtc
+        };
+        _context.TechnicianAvailabilities.Add(avail);
+        await _context.SaveChangesAsync();
+
+        return new TechnicianAvailabilityResponseDto
+        {
+            Id = avail.Id,
+            TechnicianId = avail.TechnicianId,
+            StartUtc = avail.StartUtc,
+            EndUtc = avail.EndUtc
+        };
+    }
+
+    public async Task<bool> RemoveAvailabilityAsync(int id, string technicianId)
+    {
+        var avail = await _context.TechnicianAvailabilities.FindAsync(id);
+        if (avail == null || avail.TechnicianId != technicianId) return false;
+        _context.TechnicianAvailabilities.Remove(avail);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<TechnicianAvailabilityResponseDto>> GetAvailabilityAsync(string technicianId)
+    {
+        return await _context.TechnicianAvailabilities
+            .Where(a => a.TechnicianId == technicianId)
+            .OrderBy(a => a.StartUtc)
+            .Select(a => new TechnicianAvailabilityResponseDto { Id = a.Id, TechnicianId = a.TechnicianId, StartUtc = a.StartUtc, EndUtc = a.EndUtc })
+            .ToListAsync();
+    }
+
+    public async Task<bool> ScheduleVisitAsync(ScheduleVisitDto dto)
+    {
+        // 1. Confirm availability window exists that covers the scheduled time
+        var availExists = await _context.TechnicianAvailabilities
+            .AnyAsync(a => a.TechnicianId == dto.TechnicianId && a.StartUtc <= dto.ScheduledUtc && a.EndUtc >= dto.ScheduledUtc);
+
+        if (!availExists) return false;
+
+        // 2. Check technician not already booked for that time (conflict with other service requests)
+        var conflict = await _context.ServiceRequests
+            .AnyAsync(r => r.TechnicianId == dto.TechnicianId && r.ScheduledDate == dto.ScheduledUtc && r.Status != RequestStatus.Completed);
+
+        if (conflict) return false;
+
+        // 3. Assign the technician and update status to Assigned
+        var request = await _context.ServiceRequests.FindAsync(dto.ServiceRequestId);
+        if (request == null) return false;
+
+        request.TechnicianId = dto.TechnicianId;
+        request.Status = RequestStatus.Assigned;
+        request.ScheduledDate = dto.ScheduledUtc;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<TechnicianWorkloadDto> GetWorkloadAsync(string technicianId)
+    {
+        // Consider completed jobs and in-progress jobs as worked hours if CompletedAt exists, otherwise use ScheduledDate duration approximation
+        var requests = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .Where(r => r.TechnicianId == technicianId && r.Status == RequestStatus.Completed)
+            .ToListAsync();
+
+        double totalHours = 0;
+        decimal totalEarnings = 0;
+
+        foreach (var r in requests)
+        {
+            if (r.CompletedAt.HasValue)
+            {
+                totalHours += (r.CompletedAt.Value - r.CreatedAt).TotalHours; // approximate; consider Scheduled duration instead if you have it
+            }
+            else
+            {
+                // fallback: assume SLA hours as job duration
+                totalHours += r.Category?.SlaHours ?? 0;
+            }
+
+            totalEarnings += r.TotalPrice;
+        }
+
+        // Monthly breakdown
+        var monthly = requests
+            .Where(r => r.CompletedAt.HasValue)
+            .GroupBy(r => new { r.CompletedAt.Value.Year, r.CompletedAt.Value.Month })
+            .Select(g => new { month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"), total = g.Sum(r => r.TotalPrice) })
+            .OrderBy(x => x.month)
+            .ToList<object>();
+
+        return new TechnicianWorkloadDto
+        {
+            TechnicianId = technicianId,
+            TotalHoursWorked = Math.Round(totalHours, 1),
+            TotalEarnings = totalEarnings,
+            MonthlyEarnings = monthly
+        };
+    }
+}

@@ -1,0 +1,124 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.Services
+{
+    // The Interface defines the contract
+    public interface IBillingService
+    {
+        Task<List<Invoice>> GetInvoicesAsync(string userId, string userRole);
+        Task<bool> PayInvoiceAsync(int invoiceId);
+        Task CreateInvoiceAsync(int requestId); // Called by ServiceRequestService
+
+        // Repair missing invoices/amounts
+        Task<int> RepairMissingInvoicesAsync();
+    }
+
+    // The Class implements the logic
+    public class BillingService : IBillingService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public BillingService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<List<Invoice>> GetInvoicesAsync(string userId, string userRole)
+        {
+            var query = _context.Invoices.Include(i => i.ServiceRequest).AsQueryable();
+
+            if (userRole == "Customer")
+            {
+                query = query.Where(i => i.ServiceRequest!.CustomerId == userId);
+            }
+
+            return await query.OrderByDescending(i => i.GeneratedDate).ToListAsync();
+        }
+
+        public async Task<bool> PayInvoiceAsync(int invoiceId)
+        {
+            var invoice = await _context.Invoices.FindAsync(invoiceId);
+            if (invoice == null) return false;
+
+            invoice.Status = "Paid";
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task CreateInvoiceAsync(int requestId)
+        {
+            var request = await _context.ServiceRequests
+                .Include(r => r.Category)
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request != null && request.Category != null)
+            {
+                // Logic to prevent duplicate invoices for the same request
+                var exists = await _context.Invoices.AnyAsync(i => i.ServiceRequestId == requestId);
+                if (!exists)
+                {
+                    var invoice = new Invoice
+                    {
+                        ServiceRequestId = requestId,
+                        Amount = request.Category.BaseCharge,
+                        Status = "Pending",
+                        GeneratedDate = DateTime.UtcNow
+                    };
+                    _context.Invoices.Add(invoice);
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<int> RepairMissingInvoicesAsync()
+        {
+            // Find completed requests
+            var completedRequests = await _context.ServiceRequests
+                .Include(r => r.Category)
+                .Where(r => r.Status == Models.RequestStatus.Completed)
+                .ToListAsync();
+
+            int fixedCount = 0;
+
+            foreach (var req in completedRequests)
+            {
+                // Ensure TotalPrice is set
+                if ((req.TotalPrice == 0m || req.TotalPrice == decimal.Zero) && req.Category != null)
+                {
+                    req.TotalPrice = req.Category.BaseCharge;
+                    fixedCount++;
+                }
+
+                // Check invoices
+                var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.ServiceRequestId == req.Id);
+                if (invoice == null)
+                {
+                    // create invoice
+                    var inv = new Invoice
+                    {
+                        ServiceRequestId = req.Id,
+                        Amount = req.TotalPrice != 0m ? req.TotalPrice : (req.Category?.BaseCharge ?? 0m),
+                        Status = "Pending",
+                        GeneratedDate = DateTime.UtcNow
+                    };
+                    _context.Invoices.Add(inv);
+                    fixedCount++;
+                }
+                else
+                {
+                    // Update invoice amount if zero
+                    if (invoice.Amount == 0m)
+                    {
+                        invoice.Amount = req.TotalPrice != 0m ? req.TotalPrice : (req.Category?.BaseCharge ?? 0m);
+                        fixedCount++;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return fixedCount;
+        }
+    }
+}

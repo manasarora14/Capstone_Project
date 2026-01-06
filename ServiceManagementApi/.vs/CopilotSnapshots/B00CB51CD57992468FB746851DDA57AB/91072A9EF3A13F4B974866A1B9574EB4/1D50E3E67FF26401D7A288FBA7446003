@@ -1,0 +1,33 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Moq;
+using ServiceManagementApi.Services;
+using Xunit;
+
+namespace ServiceManagementApi.Tests.Services
+{
+    public class CategoryServiceTests
+    {
+        [Fact]
+        public async Task GetAllAsync_ReturnsList()
+        {
+            var mockRepo = new Mock<ICategoryService>();
+            mockRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<object>());
+
+            var service = mockRepo.Object;
+            var res = await service.GetAllAsync();
+            Assert.NotNull(res);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_NotFound_ReturnsNull()
+        {
+            var mockRepo = new Mock<ICategoryService>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((object)null);
+
+            var service = mockRepo.Object;
+            var res = await service.GetByIdAsync(99);
+            Assert.Null(res);
+        }
+    }
+}

@@ -1,0 +1,29 @@
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Models;
+using Microsoft.AspNetCore.Identity;
+
+namespace ServiceManagementApi.Data;
+
+public class ApplicationDbContext : IdentityDbContext<IdentityUser>
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+    public DbSet<ServiceRequest> ServiceRequests { get; set; }
+    public DbSet<ServiceCategory> ServiceCategories { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Invoice>()
+        .Property(i => i.Amount)
+        .HasColumnType("decimal(18,2)");
+
+        builder.Entity<ServiceCategory>()
+            .Property(s => s.BaseCharge)
+            .HasColumnType("decimal(18,2)");
+
+    }
+}}

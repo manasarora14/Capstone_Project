@@ -1,0 +1,60 @@
+<mat-toolbar class="main-navbar">
+  <div class="brand-section" routerLink="/">
+    <mat-icon>build_circle</mat-icon>
+    <span class="brand-name">ServiceManager</span>
+  </div>
+
+  <span class="spacer"></span>
+
+  <div class="nav-links">
+    @if (auth.isLoggedIn()) {
+      <button mat-button routerLink="/dashboard">
+        <mat-icon>dashboard</mat-icon> Dashboard
+      </button>
+
+      <button mat-icon-button [matMenuTriggerFor]="notifMenu">
+  <mat-icon [matBadge]="notifService.unreadCount()" 
+            [matBadgeHidden]="notifService.unreadCount() === 0" 
+            matBadgeColor="warn">
+    notifications
+  </mat-icon>
+</button>
+
+<mat-menu #notifMenu="matMenu" class="notif-menu" (menuOpened)="notifService.markAllRead()">
+  <div class="notif-header">
+    <span>Notifications</span>
+    <button mat-button (click)="notifService.clearNotifications()">Clear All</button>
+  </div>
+  
+  <mat-divider></mat-divider>
+
+  @if (notifService.notifications().length === 0) {
+    <div class="empty-notif">No new notifications</div>
+  }
+
+  @for (n of notifService.notifications(); track n) {
+    <button mat-menu-item class="notif-item" (click)="notifService.markAsRead(n)">
+      <mat-icon color="primary">info</mat-icon>
+      <div class="notif-content">
+        <p class="notif-msg">{{ n.message }}</p>
+        <small class="notif-date">{{ n.date | date:'shortTime' }}</small>
+      </div>
+    </button>
+  }
+</mat-menu>
+      
+      <div class="user-info">
+        <span class="user-role-badge">{{ auth.userRole() }}</span>
+        <button mat-flat-button class="logout-btn" (click)="auth.logout()">
+          <mat-icon>logout</mat-icon> Logout
+        </button>
+      </div>
+
+    } @else {
+      <button mat-button routerLink="/login">Login</button>
+      <button mat-flat-button color="primary" routerLink="/register" class="register-nav-btn">
+        Register
+      </button>
+    }
+  </div>
+</mat-toolbar>

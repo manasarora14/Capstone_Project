@@ -1,0 +1,65 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>
+      <mat-icon>assignment_ind</mat-icon> 
+      Assign Technicians
+    </h2>
+    <p class="subtitle">Review pending requests and allocate them to available staff</p>
+  </div>
+
+  <mat-card class="custom-card">
+    <table mat-table [dataSource]="pendingRequests()" class="uniform-table">
+      
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef> ID </th>
+        <td mat-cell *matCellDef="let r"> <strong>#{{r.id}}</strong> </td>
+      </ng-container>
+
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef> Issue Description </th>
+        <td mat-cell *matCellDef="let r"> {{r.issueDescription}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="assignee">
+        <th mat-header-cell *matHeaderCellDef> Select Technician </th>
+        <td mat-cell *matCellDef="let r">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div style="min-width:200px;font-size:12px;color:#666">
+              <strong>Scheduled:</strong> {{r.scheduledDate | date:'short'}}
+            </div>
+
+            
+
+            <mat-form-field appearance="outline" class="table-form-field" style="width:320px">
+              <mat-label>Choose Technician</mat-label>
+              <mat-select (selectionChange)="r.selectedTechId = $event.value">
+                <mat-option *ngFor="let t of getAvailableTechnicians(r)" [value]="t.id">
+                  {{ t.name || t.displayName || t.email || 'Technician' }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef> Action </th>
+        <td mat-cell *matCellDef="let r">
+          <button mat-icon-button class="assign-btn" color="primary" aria-label="Assign" title="Assign"
+                  (click)="assign(r.id, r.selectedTechId)">
+            <mat-icon>check</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <div *ngIf="pendingRequests().length === 0" class="empty-state">
+      <mat-icon>done_all</mat-icon>
+      <h3>All requests assigned</h3>
+      <p>No pending tasks found in the queue.</p>
+    </div>
+  </mat-card>
+</div>

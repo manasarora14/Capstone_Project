@@ -1,0 +1,9 @@
+/* You can add global styles to this file, and also import other style files */
+.success-snackbar {
+  background-color: #2e7d32 !important; /* Material Green */
+  color: white !important;
+}
+
+.success-snackbar button {
+  color: white !important;
+}

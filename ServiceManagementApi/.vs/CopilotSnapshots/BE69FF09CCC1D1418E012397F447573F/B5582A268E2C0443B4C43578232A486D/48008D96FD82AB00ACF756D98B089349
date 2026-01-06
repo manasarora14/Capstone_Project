@@ -1,0 +1,22 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ServiceManagementApi.Models;
+
+public class Invoice
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int ServiceRequestId { get; set; }
+    public ServiceRequest? ServiceRequest { get; set; }
+
+    [Required]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than zero")]
+    public decimal Amount { get; set; }
+
+    // Use UTC for generated timestamps to avoid timezone issues
+    public DateTime GeneratedDate { get; set; } = DateTime.UtcNow;
+
+    // Status: Paid or Pending
+    public string Status { get; set; } = "Pending";
+}

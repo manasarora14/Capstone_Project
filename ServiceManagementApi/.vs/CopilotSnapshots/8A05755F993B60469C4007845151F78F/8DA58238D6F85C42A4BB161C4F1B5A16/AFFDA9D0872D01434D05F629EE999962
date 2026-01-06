@@ -1,0 +1,180 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.DTOs;
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.Services;
+
+public interface IServiceRequestService
+{
+    Task<List<ServiceCategory>> GetCategoriesAsync();
+    Task CreateRequestAsync(CreateRequestDto dto, string userId);
+    Task<List<ServiceRequest>> GetCustomerRequestsAsync(string userId);
+    Task<List<ServiceRequest>> GetTechnicianTasksAsync(string techId);
+    Task<List<ServiceRequest>> GetAllForMonitorAsync();
+    Task<bool> AssignTechnicianAsync(AssignTechnicianDto dto);
+    Task<bool> UpdateStatusWithBillingAsync(UpdateStatusDto dto);
+
+    Task<object> GetDashboardStatsAsync();
+}
+
+public class ServiceRequestService : IServiceRequestService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly IBillingService _billingService;
+
+    public ServiceRequestService(ApplicationDbContext context, IBillingService billingService)
+    {
+        _context = context;
+        _billingService = billingService;
+    }
+
+    public async Task<List<ServiceCategory>> GetCategoriesAsync() =>
+        await _context.ServiceCategories.ToListAsync();
+
+    public async Task CreateRequestAsync(CreateRequestDto dto, string userId)
+    {
+        var request = new ServiceRequest
+        {
+            IssueDescription = dto.IssueDescription,
+            CategoryId = dto.CategoryId,
+            Priority = dto.Priority,
+            ScheduledDate = dto.ScheduledDate.ToUniversalTime(),
+            CustomerId = userId,
+            Status = RequestStatus.Requested,
+            CreatedAt = DateTime.UtcNow
+        };
+        _context.ServiceRequests.Add(request);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<ServiceRequest>> GetCustomerRequestsAsync(string userId) =>
+        await _context.ServiceRequests
+            .Include(r => r.Category).Include(r => r.Technician)
+            .Where(r => r.CustomerId == userId)
+            .OrderByDescending(r => r.CreatedAt).ToListAsync();
+
+    public async Task<List<ServiceRequest>> GetTechnicianTasksAsync(string techId) =>
+        await _context.ServiceRequests
+            .Include(r => r.Category).Include(r => r.Customer)
+            .Where(r => r.TechnicianId == techId)
+            .OrderByDescending(r => r.CreatedAt).ToListAsync();
+
+    public async Task<List<ServiceRequest>> GetAllForMonitorAsync() =>
+        await _context.ServiceRequests
+            .Include(r => r.Category).Include(r => r.Customer).Include(r => r.Technician)
+            .OrderByDescending(r => r.CreatedAt).ToListAsync();
+
+    public async Task<bool> AssignTechnicianAsync(AssignTechnicianDto dto)
+    {
+        var request = await _context.ServiceRequests.FindAsync(dto.RequestId);
+        if (request == null) return false;
+
+        request.TechnicianId = dto.TechnicianId;
+        request.Status = RequestStatus.Assigned;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> UpdateStatusWithBillingAsync(UpdateStatusDto dto)
+    {
+        var request = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .FirstOrDefaultAsync(r => r.Id == dto.RequestId);
+
+        if (request == null) return false;
+
+        request.Status = dto.Status;
+        request.ResolutionNotes = dto.ResolutionNotes;
+
+        if (dto.Status == RequestStatus.Completed)
+        {
+            // 1. Set the reporting fields (Crucial for Dashboard!)
+            request.CompletedAt = DateTime.UtcNow;
+            request.TotalPrice = request.Category?.BaseCharge ?? 0;
+
+            // 2. Trigger Billing Service
+            await _billingService.CreateInvoiceAsync(request.Id);
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<object> GetDashboardStatsAsync()
+    {
+        // 1. Fetch all requests with necessary inclusions
+        var allRequests = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .Include(r => r.Technician) // IMPORTANT: Required for technicianLoad grouping
+            .ToListAsync();
+
+        // 2. Calculate Requests by Status
+        var statusCounts = allRequests
+            .GroupBy(r => r.Status)
+            .Select(g => new { Status = g.Key.ToString(), Count = g.Count() })
+            .ToList();
+
+        // 3. Calculate Average Resolution Time (Hours)
+        var avgResolution = allRequests
+            .Where(r => r.Status == RequestStatus.Completed && r.CompletedAt.HasValue)
+            .Select(r => (r.CompletedAt.Value - r.CreatedAt).TotalHours)
+            .DefaultIfEmpty(0)
+            .Average();
+
+        // 4. Calculate Revenue by Month (using the TotalPrice field we added)
+        var revenueReport = allRequests
+            .Where(r => r.Status == RequestStatus.Completed)
+            .GroupBy(r => new { r.CreatedAt.Year, r.CreatedAt.Month })
+            .Select(g => new {
+                Month = $"{g.Key.Month}/{g.Key.Year}",
+                Total = g.Sum(r => r.TotalPrice)
+            })
+            .OrderByDescending(x => x.Month)
+            .ToList();
+
+        // 5. Calculate Technician Load (Your specific request)
+        var technicianLoad = allRequests
+    .Where(r => r.TechnicianId != null && r.Status != RequestStatus.Completed)
+    // REPLACE THE LINE BELOW:
+    .GroupBy(r => r.Technician != null ? r.Technician.UserName : "Unknown")
+    .Select(g => new {
+        Name = g.Key,
+        TaskCount = g.Count()
+    }).ToList();
+
+        // 6. Return everything as a single anonymous object
+        return new
+        {
+            statusCounts,
+            avgResolution,
+            revenueReport,
+            technicianLoad
+        };
+    }
+
+    public async Task<bool> UpdateStatusAsync(int requestId, RequestStatus newStatus, string notes)
+    {
+        var request = await _context.ServiceRequests
+            .Include(r => r.Category) // Need this to get the price
+            .FirstOrDefaultAsync(r => r.Id == requestId);
+
+        if (request == null) return false;
+
+        request.Status = newStatus;
+        request.ResolutionNotes = notes;
+
+        // ADD THIS LOGIC:
+        if (newStatus == RequestStatus.Completed)
+        {
+            request.CompletedAt = DateTime.UtcNow;
+            // Lock in the price from the category at the moment of completion
+            request.TotalPrice = request.Category?.BaseCharge ?? 0;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+
+}

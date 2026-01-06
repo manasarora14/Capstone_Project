@@ -1,0 +1,49 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using System.Linq;
+
+namespace ServiceManagementApi.Services;
+
+public interface IDashboardService
+{
+    // Keep existing name and add legacy method alias
+    Task<object> GetStatsAsync();
+
+    // Backwards-compatible name expected by other code
+    Task<object> GetDashboardStatsAsync();
+}
+
+public class DashboardService : IDashboardService
+{
+    private readonly ApplicationDbContext _context;
+    public DashboardService(ApplicationDbContext context) => _context = context;
+
+    // Primary implementation
+    public async Task<object> GetStatsAsync()
+    {
+        var statusCounts = await _context.ServiceRequests
+            .GroupBy(r => r.Status)
+            .Select(g => new { Status = g.Key.ToString(), Count = g.Count() })
+            .ToListAsync();
+
+        var techWorkload = await _context.ServiceRequests
+            .Where(r => r.TechnicianId != null)
+            .GroupBy(r => r.TechnicianId)
+            .Select(g => new { TechnicianId = g.Key, TaskCount = g.Count() })
+            .ToListAsync();
+
+        return new
+        {
+            TotalRequests = await _context.ServiceRequests.CountAsync(),
+            StatusSummary = statusCounts,
+            Workload = techWorkload,
+            TotalRevenue = await _context.Invoices.Where(i => i.Status == "Paid").SumAsync(i => i.Amount)
+        };
+    }
+
+    // Backwards-compatibility wrapper
+    public async Task<object> GetDashboardStatsAsync()
+    {
+        return await GetStatsAsync();
+    }
+}

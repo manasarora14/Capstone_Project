@@ -1,0 +1,117 @@
+.main-navbar {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background-color: #ffffff !important;
+  color: #333 !important;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  height: 64px;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #2e7d32;
+}
+
+.brand-section mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.brand-name {
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.5px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 10px;
+  padding-left: 15px;
+  border-left: 1px solid #ddd;
+}
+
+.user-role-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.logout-btn {
+  background-color: #fce8e6 !important;
+  color: #d32f2f !important;
+  font-weight: 600 !important;
+}
+
+.register-nav-btn {
+  background-color: #2e7d32 !important;
+  color: white !important;
+}
+
+/* Material Button Adjustments */
+button mat-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.notif-menu {
+  width: 300px;
+  max-height: 400px;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  font-weight: bold;
+}
+
+.notif-item {
+  height: auto !important;
+  line-height: 1.4 !important;
+  padding: 12px !important;
+  white-space: normal !important;
+}
+
+.notif-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-msg {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.notif-date {
+  color: #888;
+  font-size: 0.75rem;
+}
+
+.empty-notif {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+}

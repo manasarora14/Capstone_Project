@@ -1,0 +1,27 @@
+<mat-card class="task-card">
+  <h3>Request #{{ request?.requestId ?? request?.id }}</h3>
+  <p><strong>Issue:</strong> {{ request?.issueDescription }}</p>
+  <p><strong>SLA:</strong> {{ request?.category?.displaySla || (request?.category?.slaHours ? (request.category.slaHours + ' hours') : '-') }}</p>
+  <p><strong>Scheduled:</strong> {{ request?.scheduledDate ? (request.scheduledDate | date:'medium') : '-' }}</p>
+  <p *ngIf="getActualDuration()"><strong>Actual Duration:</strong> {{ getActualDuration() }}</p>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="onStart()" [disabled]="request?.workStartedAt || request?.workEndedAt">Start</button>
+    <button mat-raised-button color="accent" (click)="onFinish()" [disabled]="!request?.workStartedAt || request?.workEndedAt">Finish</button>
+    <span *ngIf="running" class="timer">Running: {{ elapsed }}</span>
+  </div>
+
+  <div class="accept-panel" style="margin-top:12px">
+    <button mat-stroked-button color="primary" (click)="openAccept()">Accept / Propose start</button>
+
+    <div *ngIf="showAccept" style="margin-top:10px">
+      <mat-form-field appearance="outline" style="width:320px">
+        <input matInput type="datetime-local" [value]="plannedLocal" (input)="plannedLocal = $event.target.value" />
+      </mat-form-field>
+      <div style="margin-top:8px">
+        <button mat-flat-button color="primary" (click)="submitAccept()" [disabled]="acceptSubmitting">Submit</button>
+        <button mat-button (click)="showAccept=false">Cancel</button>
+      </div>
+    </div>
+  </div>
+</mat-card>

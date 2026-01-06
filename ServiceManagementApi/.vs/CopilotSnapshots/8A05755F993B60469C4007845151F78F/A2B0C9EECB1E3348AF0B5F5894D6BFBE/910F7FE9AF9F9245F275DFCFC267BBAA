@@ -1,0 +1,360 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceManagementApi.Data;
+using ServiceManagementApi.DTOs;
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.Services;
+
+public interface IServiceRequestService
+{
+    Task<List<ServiceCategory>> GetCategoriesAsync();
+    Task CreateRequestAsync(CreateRequestDto dto, string userId);
+    Task<List<ServiceRequest>> GetCustomerRequestsAsync(string userId);
+    Task<List<ServiceRequest>> GetTechnicianTasksAsync(string techId);
+    Task<List<ServiceRequest>> GetAllForMonitorAsync();
+    Task<bool> AssignTechnicianAsync(AssignTechnicianDto dto);
+    Task<bool> UpdateStatusWithBillingAsync(UpdateStatusDto dto);
+
+    Task<object> GetDashboardStatsAsync();
+
+    // Added signatures for controller actions
+    Task<bool> RespondToAssignmentAsync(int requestId, string techId, bool accept);
+    Task<bool> RescheduleRequestAsync(int requestId, DateTime newDate, string userId, string userRole);
+    Task<bool> CancelRequestAsync(int requestId, string userId);
+
+    // Technician reports and actions
+    Task<bool> StartWorkAsync(int requestId, string techId, DateTime startUtc);
+    Task<bool> FinishWorkAsync(int requestId, string techId, DateTime endUtc);
+}
+
+public class ServiceRequestService : IServiceRequestService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly IBillingService _billingService;
+
+    public ServiceRequestService(ApplicationDbContext context, IBillingService billingService)
+    {
+        _context = context;
+        _billingService = billingService;
+    }
+
+    public async Task<List<ServiceCategory>> GetCategoriesAsync() =>
+        await _context.ServiceCategories.ToListAsync();
+
+    public async Task CreateRequestAsync(CreateRequestDto dto, string userId)
+    {
+        // Combine date and optional time into one DateTime
+        var datePart = dto.ScheduledDate.Date;
+        var timePart = dto.ScheduledTime ?? TimeSpan.Zero;
+        var scheduledLocal = datePart + timePart;
+
+        // Determine default estimated duration from category SLA
+        double? estimated = null;
+        var cat = await _context.ServiceCategories.FindAsync(dto.CategoryId);
+        if (cat != null) estimated = cat.SlaHours;
+
+        var request = new ServiceRequest
+        {
+            IssueDescription = dto.IssueDescription,
+            CategoryId = dto.CategoryId,
+            Priority = dto.Priority,
+            ScheduledDate = scheduledLocal.ToUniversalTime(),
+            CustomerId = userId,
+            Status = RequestStatus.Requested,
+            CreatedAt = DateTime.UtcNow,
+            EstimatedDurationHours = estimated
+        };
+        _context.ServiceRequests.Add(request);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<ServiceRequest>> GetCustomerRequestsAsync(string userId) =>
+        await _context.ServiceRequests
+            .Include(r => r.Category).Include(r => r.Technician)
+            .Where(r => r.CustomerId == userId)
+            .OrderByDescending(r => r.CreatedAt).ToListAsync();
+
+    public async Task<List<ServiceRequest>> GetTechnicianTasksAsync(string techId) =>
+        await _context.ServiceRequests
+            .Include(r => r.Category).Include(r => r.Customer)
+            .Where(r => r.TechnicianId == techId)
+            .OrderByDescending(r => r.CreatedAt).ToListAsync();
+
+    public async Task<List<ServiceRequest>> GetAllForMonitorAsync() =>
+        await _context.ServiceRequests
+            .Include(r => r.Category).Include(r => r.Customer).Include(r => r.Technician)
+            .OrderByDescending(r => r.CreatedAt).ToListAsync();
+
+    public async Task<bool> AssignTechnicianAsync(AssignTechnicianDto dto)
+    {
+        var request = await _context.ServiceRequests.FindAsync(dto.RequestId);
+        if (request == null) return false;
+
+        request.TechnicianId = dto.TechnicianId;
+        request.Status = RequestStatus.Assigned;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> UpdateStatusWithBillingAsync(UpdateStatusDto dto)
+    {
+        var request = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .FirstOrDefaultAsync(r => r.Id == dto.RequestId);
+
+        if (request == null) return false;
+
+        request.Status = dto.Status;
+        request.ResolutionNotes = dto.ResolutionNotes;
+
+        if (dto.Status == RequestStatus.Completed)
+        {
+            // 1. Set the reporting fields (Crucial for Dashboard!)
+            request.CompletedAt = DateTime.UtcNow;
+
+            // Compute base price + priority extra
+            var baseCharge = request.Category?.BaseCharge ?? 0m;
+            decimal priorityExtra = request.Priority switch
+            {
+                Priority.Medium => 50m,
+                Priority.High => 100m,
+                _ => 0m
+            };
+            request.TotalPrice = baseCharge + priorityExtra;
+
+            // 2. Trigger Billing Service
+            await _billingService.CreateInvoiceAsync(request.Id);
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> StartWorkAsync(int requestId, string techId, DateTime startUtc)
+    {
+        var request = await _context.ServiceRequests.Include(r => r.Technician).FirstOrDefaultAsync(r => r.Id == requestId);
+        if (request == null) return false;
+        if (request.TechnicianId == null || request.TechnicianId != techId) return false;
+
+        request.WorkStartedAt = startUtc.ToUniversalTime();
+        request.Status = RequestStatus.InProgress;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> FinishWorkAsync(int requestId, string techId, DateTime endUtc)
+    {
+        var request = await _context.ServiceRequests.Include(r => r.Category).FirstOrDefaultAsync(r => r.Id == requestId);
+        if (request == null) return false;
+        if (request.TechnicianId == null || request.TechnicianId != techId) return false;
+
+        request.WorkEndedAt = endUtc.ToUniversalTime();
+        request.CompletedAt = endUtc.ToUniversalTime();
+        request.Status = RequestStatus.Completed;
+
+        // lock in price if not already set
+        if (request.TotalPrice == 0m)
+        {
+            var baseCharge = request.Category?.BaseCharge ?? 0m;
+            decimal priorityExtra = request.Priority switch
+            {
+                Priority.Medium => 50m,
+                Priority.High => 100m,
+                _ => 0m
+            };
+            request.TotalPrice = baseCharge + priorityExtra;
+        }
+
+        await _context.SaveChangesAsync();
+
+        // create invoice
+        await _billingService.CreateInvoiceAsync(request.Id);
+        return true;
+    }
+
+    public async Task<object> GetDashboardStatsAsync()
+    {
+        // Load necessary requests and related data into memory to avoid complex EF GroupBy translations
+        var allRequests = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .Include(r => r.Technician)
+            .ToListAsync();
+
+        var now = DateTime.UtcNow;
+
+        var totalRequests = allRequests.Count;
+
+        var statusSummary = allRequests
+            .GroupBy(r => r.Status)
+            .Select(g => new { status = g.Key.ToString(), count = g.Count() })
+            .ToList();
+
+        var workload = allRequests
+            .Where(r => r.Technician != null && r.Status != RequestStatus.Completed)
+            .GroupBy(r => string.IsNullOrEmpty(r.Technician?.UserName) ? "Unknown" : r.Technician.UserName)
+            .Select(g => new { technician = g.Key, taskCount = g.Count() })
+            .ToList();
+
+        var completed = allRequests
+            .Where(r => r.Status == RequestStatus.Completed && r.CompletedAt.HasValue && r.Category != null)
+            .ToList();
+
+        // avg resolution time measured from ScheduledDate -> CompletedAt
+        double avgResolutionTime = 0;
+        if (completed.Any())
+        {
+            avgResolutionTime = Math.Round(completed.Average(r => (r.CompletedAt!.Value - r.ScheduledDate).TotalHours), 1);
+        }
+
+        // SLA compliance: percent of completed where duration <= category.SlaHours or EstimatedDurationHours if set
+        double slaCompliance = 0;
+        var slaApplicable = completed.Where(r => r.Category != null).ToList();
+        if (slaApplicable.Any())
+        {
+            var compliantCount = slaApplicable.Count(r =>
+            {
+                var duration = r.EstimatedDurationHours ?? r.Category.SlaHours;
+                return (r.CompletedAt!.Value - r.ScheduledDate).TotalHours <= duration;
+            });
+            slaCompliance = Math.Round(100.0 * compliantCount / slaApplicable.Count, 1);
+        }
+
+        // total revenue for current month (invoices preferred, fallback to ServiceRequest.TotalPrice)
+        decimal totalRevenue = 0m;
+        if (_context.Invoices != null)
+        {
+            totalRevenue = await _context.Invoices
+                .Where(i => i.GeneratedDate.Month == now.Month && i.GeneratedDate.Year == now.Year)
+                .SumAsync(i => (decimal?)i.Amount) ?? 0m;
+        }
+
+        if (totalRevenue == 0m)
+        {
+            totalRevenue = allRequests
+                .Where(r => r.Status == RequestStatus.Completed && r.CompletedAt.HasValue && r.CompletedAt.Value.Month == now.Month && r.CompletedAt.Value.Year == now.Year)
+                .Sum(r => r.TotalPrice);
+        }
+
+        // revenue report grouped by month from requests
+        var reqReport = allRequests
+            .Where(r => r.Status == RequestStatus.Completed && r.CompletedAt.HasValue)
+            .GroupBy(r => new { Year = r.CompletedAt.Value.Year, Month = r.CompletedAt.Value.Month })
+            .Select(g => new { month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"), total = g.Sum(r => r.TotalPrice) })
+            .OrderBy(x => x.month)
+            .ToList<object>();
+
+        return new
+        {
+            totalRequests,
+            statusSummary,
+            workload,
+            avgResolutionTime,
+            slaCompliance,
+            revenueReport = reqReport,
+            totalRevenue
+        };
+    }
+
+    public async Task<bool> UpdateStatusAsync(int requestId, RequestStatus newStatus, string notes)
+    {
+        var request = await _context.ServiceRequests
+            .Include(r => r.Category) // Critical: Must include Category to get the price
+            .FirstOrDefaultAsync(r => r.Id == requestId);
+
+        if (request == null) return false;
+
+        request.Status = newStatus;
+        request.ResolutionNotes = notes;
+
+        // If transitioning to Completed, set CompletedAt and pricing
+        if (newStatus == RequestStatus.Completed)
+        {
+            if (!request.CompletedAt.HasValue)
+                request.CompletedAt = DateTime.UtcNow;
+
+            if (request.TotalPrice == 0 && request.Category != null)
+            {
+                request.TotalPrice = request.Category.BaseCharge;
+            }
+
+            // ADD THIS LOGIC:
+            request.CompletedAt = DateTime.UtcNow;
+            // Lock in the price from the category at the moment of completion
+            request.TotalPrice = request.Category?.BaseCharge ?? 0;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RespondToAssignmentAsync(int requestId, string techId, bool accept)
+    {
+        var request = await _context.ServiceRequests.FindAsync(requestId);
+
+        // Safety check: ensure only the assigned tech can respond
+        if (request == null || request.TechnicianId != techId) return false;
+
+        if (accept)
+        {
+            request.Status = RequestStatus.InProgress;
+        }
+        else
+        {
+            // Technician rejected: unassign and put request back to Requested so manager can reassign
+            request.TechnicianId = null;
+            request.Status = RequestStatus.Requested;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RescheduleRequestAsync(int requestId, DateTime newDate, string userId, string userRole)
+    {
+        var request = await _context.ServiceRequests
+            .Include(r => r.Category)
+            .FirstOrDefaultAsync(r => r.Id == requestId);
+
+        if (request == null) return false;
+
+        // Security: Customers can only reschedule their own requests
+        if (userRole == "Customer" && request.CustomerId != userId) return false;
+
+        // Logic: If already assigned, check if the technician is free at the NEW time
+        if (request.TechnicianId != null)
+        {
+            bool isBusy = await _context.ServiceRequests.AnyAsync(r =>
+                r.TechnicianId == request.TechnicianId &&
+                r.Id != requestId && // Don't check against itself
+                newDate < r.ScheduledDate.AddHours(r.Category.SlaHours) &&
+                newDate.AddHours(request.Category.SlaHours) > r.ScheduledDate);
+
+            if (isBusy)
+            {
+                // If tech is busy, unassign them and move back to 'Requested'
+                request.TechnicianId = null;
+                request.Status = RequestStatus.Requested;
+            }
+        }
+
+        request.ScheduledDate = newDate;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> CancelRequestAsync(int requestId, string userId)
+    {
+        var request = await _context.ServiceRequests.FindAsync(requestId);
+        if (request == null || request.CustomerId != userId) return false;
+
+        // Prevent cancellation if the technician is already working
+        if (request.Status == RequestStatus.InProgress) return false;
+
+        // Mark cancelled requests as Closed
+        request.Status = RequestStatus.Closed;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+
+}

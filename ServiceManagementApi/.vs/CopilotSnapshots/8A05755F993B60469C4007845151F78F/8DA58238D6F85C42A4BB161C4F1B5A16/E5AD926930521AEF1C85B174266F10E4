@@ -1,0 +1,27 @@
+﻿
+
+using ServiceManagementApi.Models;
+
+namespace ServiceManagementApi.DTOs
+{
+    public class CreateRequestDto
+    {
+        public string IssueDescription { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+        public Priority Priority { get; set; }
+        public DateTime ScheduledDate { get; set; }
+    }
+
+    public class UpdateStatusDto
+    {
+        public int RequestId { get; set; }
+        public RequestStatus Status { get; set; }
+        public string? ResolutionNotes { get; set; } 
+    }
+
+    public class AssignTechnicianDto
+    {
+        public int RequestId { get; set; }
+        public string TechnicianId { get; set; } = string.Empty;
+    }
+}

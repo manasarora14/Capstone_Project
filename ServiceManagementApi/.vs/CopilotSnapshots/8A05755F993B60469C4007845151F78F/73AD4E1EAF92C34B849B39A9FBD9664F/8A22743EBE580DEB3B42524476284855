@@ -1,0 +1,48 @@
+﻿namespace ServiceManagementApi.DTOs;
+
+public class AvailabilityDto
+{
+    public string TechnicianId { get; set; } = string.Empty;
+    public DateTime StartUtc { get; set; }
+    public DateTime EndUtc { get; set; }
+}
+
+public class ScheduleVisitDto
+{
+    public int ServiceRequestId { get; set; }
+    public string TechnicianId { get; set; } = string.Empty;
+    public DateTime ScheduledUtc { get; set; }
+    // New: duration in hours for the visit (can be fractional)
+    public double DurationHours { get; set; } = 1.0;
+}
+
+public class TechnicianAvailabilityResponseDto
+{
+    public int Id { get; set; }
+    public string TechnicianId { get; set; } = string.Empty;
+    public DateTime StartUtc { get; set; }
+    public DateTime EndUtc { get; set; }
+}
+
+public class AvailableQueryDto
+{
+    public DateTime ScheduledUtc { get; set; }
+    public double DurationHours { get; set; } = 1.0;
+}
+
+public class AvailableTechDto
+{
+    public string TechnicianId { get; set; } = string.Empty;
+    public string? UserName { get; set; }
+    public DateTime AvailableFromUtc { get; set; }
+    public DateTime AvailableToUtc { get; set; }
+}
+
+public class TechnicianWorkloadDto
+{
+    public string TechnicianId { get; set; } = string.Empty;
+    public double TotalHoursWorked { get; set; }
+    public decimal TotalEarnings { get; set; }
+    // Optionally, breakdown by month
+    public List<object>? MonthlyEarnings { get; set; }
+}

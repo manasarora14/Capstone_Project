@@ -1,0 +1,81 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>
+      <mat-icon>category</mat-icon>
+      Service Catalog
+    </h2>
+    <p class="subtitle">Browse our available services and pricing</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-icon class="spinner">hourglass_empty</mat-icon>
+      <p>Loading service catalog...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <mat-card class="error-card">
+      <div class="error-content">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-button (click)="loadCategories()">Retry</button>
+      </div>
+    </mat-card>
+  }
+
+  @if (!loading() && !error() && categories().length > 0) {
+    <div class="catalog-grid">
+      @for (category of categories(); track category.id) {
+        <mat-card class="catalog-card">
+          <mat-card-header>
+            <div class="card-header-content">
+              <mat-icon class="category-icon">{{ getCategoryIcon(category.name) }}</mat-icon>
+              <mat-card-title>{{ category.name }}</mat-card-title>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="description">{{ category.description }}</p>
+            
+            <div class="details-section">
+              <div class="detail-item">
+                <mat-icon>attach_money</mat-icon>
+                <div class="detail-content">
+                  <span class="detail-label">Base Charge</span>
+                  <span class="detail-value">₹{{ category.baseCharge }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <mat-icon>schedule</mat-icon>
+                <div class="detail-content">
+                  <span class="detail-label">SLA</span>
+                  <span class="detail-value">{{ category.slaHours }} hours</span>
+                </div>
+              </div>
+            </div>
+
+            @if (isCustomer()) {
+              <div class="action-section">
+                <button mat-raised-button color="primary" routerLink="/create-request" [queryParams]="{categoryId: category.id}">
+                  <mat-icon>add_task</mat-icon>
+                  Request Service
+                </button>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+
+  @if (!loading() && !error() && categories().length === 0) {
+    <mat-card class="empty-card">
+      <div class="empty-content">
+        <mat-icon>inventory_2</mat-icon>
+        <p>No services available at the moment.</p>
+      </div>
+    </mat-card>
+  }
+</div>
+

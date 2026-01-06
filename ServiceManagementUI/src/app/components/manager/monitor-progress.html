@@ -1,0 +1,94 @@
+<div class="monitor-container">
+  <mat-card class="header-card">
+    <div class="header-content">
+      <h2><mat-icon>analytics</mat-icon> Monitor All Progress</h2>
+      
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Customer, Tech, or Issue</mat-label>
+        <input matInput (input)="onSearchChange($event)" placeholder="Ex. Water Leak">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="priority-field">
+        <mat-label>Priority</mat-label>
+        <mat-select [(value)]="selectedPriority" (selectionChange)="onPriorityChange($event.value)">
+          <mat-option [value]="null">All</mat-option>
+          <mat-option [value]="Priority.Low">Low</mat-option>
+          <mat-option [value]="Priority.Medium">Medium</mat-option>
+          <mat-option [value]="Priority.High">High</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-card>
+
+  <mat-card class="table-card">
+    <table mat-table [dataSource]="allRequests()">
+      
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>#ID</th>
+        <td mat-cell *matCellDef="let r">#{{r.id}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="customer">
+        <th mat-header-cell *matHeaderCellDef>Customer</th>
+        <td mat-cell *matCellDef="let r">{{r.customerName || r.customerEmail}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="technician">
+        <th mat-header-cell *matHeaderCellDef>Technician</th>
+        <td mat-cell *matCellDef="let r">
+          {{r.technicianName || r.technicianEmail || 'Not Assigned'}}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef>Priority</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="priority-badge" [ngClass]="getPriorityLabel(r.priority).toLowerCase()">
+            {{getPriorityLabel(r.priority)}}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let r">
+          <mat-chip [ngClass]="getStatusClass(r)">{{getStatusName(r)}}</mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="pricing">
+        <th mat-header-cell *matHeaderCellDef>Total (INR)</th>
+        <td mat-cell *matCellDef="let r">
+          {{getTotalPrice(r) | currency:'INR':'symbol':'1.0-0'}}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="notes">
+        <th mat-header-cell *matHeaderCellDef>Issue</th>
+        <td mat-cell *matCellDef="let r" class="truncate-text">
+          {{r.issueDescription}}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let r">
+          <button mat-button color="primary" [routerLink]="['/service-details', r.id]" matTooltip="View Details">
+            View Details
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator 
+      [length]="totalRecords()"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)"
+      aria-label="Select page">
+    </mat-paginator>
+  </mat-card>
+</div>
